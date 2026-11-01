@@ -1,0 +1,94 @@
+"""Step 3: legal thresholds, ratios with traffic lights and trend analysis."""
+
+import plotly.graph_objects as go
+import streamlit as st
+
+import shared
+from logic import analysis
+
+st.title("3 · Ratio analysis")
+ys = shared.require_financials()
+latest = ys[-1]
+st.caption(f"Traffic lights refer to the latest year ({latest.year}) and use the thresholds "
+           f"for the industry **{latest.industry}** (see company profile). "
+           f"Trend over {len(ys)} year(s): {ys[0].year}–{latest.year}.")
+
+if not latest.has_cash_flow_statement:
+    st.info("No cash flow statement for the latest year: operating cash flow is approximated "
+            "as net income + depreciation.")
+
+# ---------------------------------------------------------------------------
+# I) Legal thresholds
+# ---------------------------------------------------------------------------
+st.subheader("I · Legal thresholds (Swiss CO)")
+cols = st.columns(3)
+for col, t in zip(cols, shared.legal_tests(latest)):
+    with col:
+        shared.traffic_light(t["status"], t["test"], t["result"], t["detail"])
+        if t["consequence"]:
+            st.caption(":material/warning: " + t["consequence"])
+
+# ---------------------------------------------------------------------------
+# II-IV) Ratio cockpit
+# ---------------------------------------------------------------------------
+TREND_ICON = {"improving": ":material/trending_up:", "deteriorating": ":material/trending_down:",
+              "stable": ":material/trending_flat:", "n/a": ""}
+
+for group, roman in [("Liquidity", "II"), ("Cash flow and debt", "III"),
+                     ("Capital and profitability", "IV")]:
+    st.subheader(f"{roman} · {group}")
+    group_ratios = [r for r in analysis.RATIOS if r.group == group]
+    cols = st.columns(len(group_ratios))
+    for col, r in zip(cols, group_ratios):
+        tr = analysis.trend(r.key, ys)
+        with col:
+            shared.traffic_light(r.status(latest), r.name, analysis.display(r, latest),
+                             f"{TREND_ICON[tr]} {tr} · {r.formula}")
+
+# ---------------------------------------------------------------------------
+# Table: all years
+# ---------------------------------------------------------------------------
+st.subheader("All years")
+rows = []
+for r in analysis.RATIOS:
+    row = {"Ratio": r.name}
+    for fy in ys:
+        row[fy.year] = f"{shared.DOT[r.status(fy)]} {analysis.display(r, fy)}"
+    row["Trend"] = analysis.trend(r.key, ys)
+    row["Thresholds"] = analysis.threshold_text(r, latest.industry)
+    rows.append(row)
+st.dataframe(rows, hide_index=True, width="stretch")
+
+# ---------------------------------------------------------------------------
+# Trend chart with threshold bands (interactive selection)
+# ---------------------------------------------------------------------------
+st.subheader("Trend of a ratio")
+choice = st.selectbox("Select ratio", [r.name for r in analysis.RATIOS], index=8)
+r = next(x for x in analysis.RATIOS if x.name == choice)
+x = [fy.year for fy in ys]
+y = [r.value(fy) for fy in ys]
+fig = go.Figure()
+fig.add_scatter(x=x, y=y, mode="lines+markers", line=dict(color="#1E2B33", width=3),
+                marker=dict(size=12, color=[shared.HEX[r.status(fy)] for fy in ys],
+                            line=dict(color="#1E2B33", width=1)),
+                hovertemplate="%{x}: %{y:.3f}<extra></extra>")
+fig.update_layout(height=380, margin=dict(t=20, b=20), template="simple_white",
+                  yaxis_tickformat=".0%" if r.unit == "%" else None, yaxis_title=r.formula)
+st.plotly_chart(fig, width="stretch")
+st.caption(f"Thresholds: {analysis.threshold_text(r, latest.industry)}. Marker colour = traffic light of that year.")
+
+# Balance sheet structure over time
+st.subheader("Balance sheet structure")
+fig = go.Figure()
+fig.add_bar(name="Equity", x=x, y=[fy.equity for fy in ys], marker_color="#2E9E6B")
+fig.add_bar(name="Interest-bearing debt", x=x, y=[fy.interest_bearing_debt for fy in ys],
+            marker_color="#3A5A6B")
+fig.add_bar(name="Other liabilities", x=x,
+            y=[fy.total_liabilities - fy.interest_bearing_debt for fy in ys], marker_color="#A9B8C0")
+fig.add_scatter(name="Net income", x=x, y=[fy.net_income for fy in ys], mode="lines+markers",
+                line=dict(color="#D64545", width=3))
+fig.update_layout(barmode="relative", height=380, margin=dict(t=20, b=20), template="simple_white",
+                  legend=dict(orientation="h", y=-0.15))
+st.plotly_chart(fig, width="stretch")
+
+shared.next_step("pages/4_questionnaire.py", "Continue with step 4: ISA 570 questionnaire")
