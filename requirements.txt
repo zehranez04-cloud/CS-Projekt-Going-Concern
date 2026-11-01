@@ -1,0 +1,12 @@
+# Python 3.14
+streamlit>=1.50
+pandas>=2.3
+numpy>=2.3
+scikit-learn>=1.7
+scipy>=1.16
+plotly>=6.0
+joblib>=1.4
+openpyxl>=3.1
+anthropic>=0.75
+fpdf2>=2.8
+matplotlib>=3.10
