@@ -183,14 +183,10 @@ def assess(years, answers, liquidity_result=None, ml_score=None, weights=None, p
     for r in analysis.RATIOS:
         if r.weight and r.status(latest) == RED:
             signals.append(("Ratio", f"{r.name}: {analysis.display(r, latest)}"))
-        if len(years) >= 3 and r.weight and analysis.trend(r.key, years) == "deteriorating":
-            signals.append(("Trend", f"{r.name} deteriorating over {len(years)} years"))
+    # (Trends are shown on the ratio analysis page, not repeated as warning signals)
     cap = analysis.capital_loss(latest)
     if cap["status"] != GREEN:
         signals.append(("Legal", cap["result"] + " (CO Art. 725a)"))
-    losses = sum(1 for fy in years if fy.net_income < 0)
-    if losses >= 2:
-        signals.append(("Trend", f"Net losses in {losses} of {len(years)} years"))
     for q in qual["yes"]:
         signals.append(("Questionnaire", f"{q.id}: {q.text}"))
     if profile:
