@@ -13,14 +13,15 @@ ss = st.session_state
 # ---------------------------------------------------------------------------
 # Weights of the components (user interaction)
 # ---------------------------------------------------------------------------
-with st.expander("Weighting of the components", icon=":material/tune:"):
-    st.caption("How strongly should each source count? The weights are normalised to 100 %.")
+st.subheader("Weighting of the components", anchor=False)
+st.caption("How strongly should each source count? The weights are normalised to 100 %.")
+with st.container(border=True):
     c1, c2, c3 = st.columns(3)
     w = ss.weights
     w["quantitative"] = c1.slider("Ratios", 0.0, 1.0, w["quantitative"], 0.05)
     w["qualitative"] = c2.slider("ISA 570 questionnaire", 0.0, 1.0, w["qualitative"], 0.05)
     w["ml"] = c3.slider("ML model", 0.0, 1.0, w["ml"], 0.05)
-
+    
 res = shared.overall_assessment()
 liq = shared.liquidity_result()
 
