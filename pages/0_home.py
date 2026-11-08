@@ -42,13 +42,13 @@ with c2:
 st.divider()
 st.subheader("Workflow")
 steps = [
-    (":material/domain:", "1 · Company profile", "Industry, size, group"),
-    (":material/upload_file:", "2 · Financial statements", "Upload & standardise with AI"),
-    (":material/monitoring:", "3 · Ratio analysis", "Legal tests, ratios, trends"),
-    (":material/checklist:", "4 · Questionnaire", "ISA 570 events and conditions"),
-    (":material/savings:", "5 · Liquidity planner", "12 months, CO Art. 725"),
-    (":material/model_training:", "6 · Bankruptcy model", "Machine learning score"),
-    (":material/gavel:", "7 · Assessment & report", "Conclusion and PDF"),
+    (":material/domain:", "1 · Company profile")
+    (":material/upload_file:", "2 · Financial statements"),
+    (":material/monitoring:", "3 · Ratio analysis"),
+    (":material/checklist:", "4 · Questionnaire"),
+    (":material/savings:", "5 · Liquidity planner"),
+    (":material/model_training:", "6 · Bankruptcy model"),
+    (":material/gavel:", "7 · Assessment & report"),
 ]
 cols = st.columns(len(steps))
 for col, (icon, title, text) in zip(cols, steps):
