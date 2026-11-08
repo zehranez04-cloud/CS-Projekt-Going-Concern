@@ -13,11 +13,11 @@ st.caption("Answer each question for the next 12 months. 'Yes' means the event o
 answers = st.session_state.answers
 
 st.html(f"""<style>
-[class*="st-key-ans-yes"] button[aria-checked="true"] {{
-    background-color: {shared.RED_HEX} !important; border-color: {shared.RED_HEX} !important;
-    color: white !important; }}
-[class*="st-key-ans-no"] button[aria-checked="true"] {{
+[class*="st-key-q_"] button[aria-checked="true"]:nth-of-type(1) {{
     background-color: {shared.GREEN_HEX} !important; border-color: {shared.GREEN_HEX} !important;
+    color: white !important; }}
+[class*="st-key-q_"] button[aria-checked="true"]:nth-of-type(2) {{
+    background-color: {shared.RED_HEX} !important; border-color: {shared.RED_HEX} !important;
     color: white !important; }}
 </style>""")
 
@@ -28,14 +28,11 @@ for cat in assessment.CATEGORIES:
         label = f"**{q.id}** · {q.text}"
         c1.markdown(label + (" :red-badge[KO]" if q.knock_out else ""))
         c1.caption(f"{q.reference} · weight {q.weight}")
-        # Current answer (after a click Streamlit already knows the new value)
-        current = st.session_state.get(f"q_{q.id}", "Yes" if answers.get(q.id) else "No")
-        with c2.container(key=f"ans-{'yes' if current == 'Yes' else 'no'}-{q.id}"):
-            choice = st.segmented_control("Answer", ["No", "Yes"], key=f"q_{q.id}",
-                                          default="Yes" if answers.get(q.id) else "No",
-                                          label_visibility="collapsed")
+        choice = c2.segmented_control("Answer", ["No", "Yes"], key=f"q_{q.id}",
+                                      default="Yes" if answers.get(q.id) else "No",
+                                      label_visibility="collapsed")
         answers[q.id] = choice == "Yes"
-
+        
 # ---------------------------------------------------------------------------
 # Result
 # ---------------------------------------------------------------------------
