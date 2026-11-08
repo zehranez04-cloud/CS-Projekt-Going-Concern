@@ -124,7 +124,8 @@ def legal_tests(fy):
 
 def traffic_light(status, title, value="", caption=""):
     """Card with a coloured dot, used on several pages."""
-    with st.container(border=True):
+    key = "card-" + "".join(ch if ch.isalnum() else "-" for ch in title.lower())
+    with st.container(border=True, key = key):
         st.markdown(f"<div style='display:flex;align-items:center;gap:10px'>"
                     f"<span style='width:16px;height:16px;border-radius:50%;flex:none;"
                     f"background:{HEX[status]}'></span><b>{title}</b></div>",
