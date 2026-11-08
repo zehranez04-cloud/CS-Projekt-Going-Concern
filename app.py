@@ -25,6 +25,13 @@ st.set_page_config(page_title="Going Concern Audit", page_icon=":material/fact_c
                    layout="wide")
 shared.init()
 
+# Cards (traffic lights) that stand side by side in columns get the same height
+st.html("""<style>
+[data-testid="stColumn"] > [data-testid="stVerticalBlock"] { height: 100%; }
+[data-testid="stLayoutWrapper"]:has(> [class*="st-key-card-"]) { flex: 1 1 auto; }
+[class*="st-key-card-"] { height: 100%; }
+</style>""")
+
 # ---------------------------------------------------------------------------
 # Navigation: one file per page in the folder pages/
 # ---------------------------------------------------------------------------
