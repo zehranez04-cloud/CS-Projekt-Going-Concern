@@ -43,8 +43,8 @@ for group, roman in [("Liquidity", "II"), ("Cash flow and debt", "III"),
         tr = analysis.trend(r.key, ys)
         with col:
             shared.traffic_light(r.status(latest), r.name, analysis.display(r, latest),
-                             f"{TREND_ICON[tr]} {tr} · {r.formula}")
-
+                             f"{TREND_ICON[tr]} {tr}  \n:blue[{r.formula}]")
+            
 # ---------------------------------------------------------------------------
 # Table: all years
 # ---------------------------------------------------------------------------
