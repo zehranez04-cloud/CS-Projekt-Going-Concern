@@ -24,9 +24,9 @@ st.subheader("I · Legal thresholds (Swiss CO)")
 cols = st.columns(3)
 for col, t in zip(cols, shared.legal_tests(latest)):
     with col:
-        shared.traffic_light(t["status"], t["test"], t["result"], t["detail"])
-        if t["consequence"]:
-            st.caption(":material/warning: " + t["consequence"])
+        # The legal consequence is shown inside the card, so all cards have the same height
+        text = t["detail"] + (f"  \n:material/warning: {t['consequence']}" if t["consequence"] else "")
+        shared.traffic_light(t["status"], t["test"], t["result"], text)
 
 # ---------------------------------------------------------------------------
 # II-IV) Ratio cockpit
