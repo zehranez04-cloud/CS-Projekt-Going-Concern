@@ -49,15 +49,44 @@ for group, roman in [("Liquidity", "II"), ("Cash flow and debt", "III"),
 # Table: all years
 # ---------------------------------------------------------------------------
 st.subheader("All years")
-rows = []
-for r in analysis.RATIOS:
-    row = {"Ratio": r.name}
-    for fy in ys:
-        row[fy.year] = f"{shared.DOT[r.status(fy)]} {analysis.display(r, fy)}"
-    row["Trend"] = analysis.trend(r.key, ys)
-    row["Thresholds"] = analysis.threshold_text(r, latest.industry)
-    rows.append(row)
-st.dataframe(rows, hide_index=True, width="stretch")
+
+# Soft colours for the dots (easier on the eyes than the strong traffic-light colours)
+SOFT = {"green": "#8CC9A6", "amber": "#EFCF7A", "red": "#E89A9A", "grey": "#D0D5D8"}
+TREND_TEXT = {"improving": "↗ improving", "deteriorating": "↘ deteriorating",
+              "stable": "→ stable", "n/a": "–"}
+
+
+def dot(status):
+    """Small round dot in the soft colour of the traffic light."""
+    return (f"<span style='display:inline-block;width:9px;height:9px;border-radius:50%;"
+            f"background:{SOFT[status]};margin-right:8px;vertical-align:middle'></span>")
+
+
+# The table is built as HTML: it shows all rows at once (no scrolling inside the table)
+head = "".join(f"<th class='num'>{fy.year}</th>" for fy in ys)
+body = ""
+for group in ["Liquidity", "Cash flow and debt", "Capital and profitability"]:
+    body += f"<tr class='group'><td colspan='{len(ys) + 3}'>{group}</td></tr>"
+    for r in [x for x in analysis.RATIOS if x.group == group]:
+        cells = "".join(f"<td class='num'>{dot(r.status(fy))}{analysis.display(r, fy)}</td>" for fy in ys)
+        body += (f"<tr><td>{r.name}</td>{cells}<td class='trend'>{TREND_TEXT[analysis.trend(r.key, ys)]}</td>"
+                 f"<td class='small'>{analysis.threshold_text(r, latest.industry)}</td></tr>")
+
+st.html(f"""
+<style>
+  .ratios {{ width:100%; border-collapse:collapse; font-size:14px; color:#1E2B33; }}
+  .ratios th {{ text-align:left; font-weight:600; padding:8px 10px; border-bottom:2px solid #E3E8EB; }}
+  .ratios td {{ padding:7px 10px; border-bottom:1px solid #EEF2F4; }}
+  .ratios .num, .ratios td:first-child {{ white-space:nowrap; }}
+  .ratios .group td {{ background:#F6F8F9; font-weight:600; font-size:12px; color:#5F6B73;
+                       text-transform:uppercase; letter-spacing:0.04em; }}
+  .ratios .trend {{ color:#5F6B73; white-space:nowrap; }}
+  .ratios .small {{ color:#8A959C; font-size:12px; }}
+</style>
+<table class="ratios">
+  <tr><th>Ratio</th>{head}<th>Trend</th><th>Thresholds</th></tr>
+  {body}
+</table>""")
 
 # ---------------------------------------------------------------------------
 # Trend chart with threshold bands (interactive selection)
