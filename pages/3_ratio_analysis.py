@@ -106,9 +106,9 @@ st.caption(f"Thresholds: {analysis.threshold_text(r, latest.industry)}. Marker c
 # Balance sheet structure over time
 st.subheader("Balance sheet structure")
 fig = go.Figure()
-fig.add_bar(name="Equity", x=x, y=[fy.equity for fy in ys], marker_color="#2E9E6B")
+fig.add_bar(name="Equity", x=x, y=[fy.equity for fy in ys], marker_color="#8DEAC0")
 fig.add_bar(name="Interest-bearing debt", x=x, y=[fy.interest_bearing_debt for fy in ys],
-            marker_color="#3A5A6B")
+            marker_color="#98CDE9")
 fig.add_bar(name="Other liabilities", x=x,
             y=[fy.total_liabilities - fy.interest_bearing_debt for fy in ys], marker_color="#A9B8C0")
 fig.add_scatter(name="Net income", x=x, y=[fy.net_income for fy in ys], mode="lines+markers",
