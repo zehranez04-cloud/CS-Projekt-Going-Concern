@@ -21,7 +21,7 @@ with st.container(border=True):
     w["quantitative"] = c1.slider("Ratios", 0.0, 1.0, w["quantitative"], 0.05)
     w["qualitative"] = c2.slider("ISA 570 questionnaire", 0.0, 1.0, w["qualitative"], 0.05)
     w["ml"] = c3.slider("ML model", 0.0, 1.0, w["ml"], 0.05)
-    
+
 res = shared.overall_assessment()
 liq = shared.liquidity_result()
 
@@ -68,7 +68,7 @@ c1, c2, c3 = st.columns(3)
 basis = c1.radio("Is the going concern basis of accounting appropriate?", ["Yes", "No"],
                  index=0 if prev.get("basis", True) else 1)
 uncert = c2.radio("Does a material uncertainty exist?", ["No", "Yes"],
-                  index=1 if prev.get("uncertainty") else 0, disabled=basis == "No")
+                  index=0 if prev.get("uncertainty") else 1, disabled=basis == "No")
 discl = c3.radio("Is it adequately disclosed in the notes?", ["Yes", "No"],
                  index=0 if prev.get("disclosed", True) else 1,
                  disabled=basis == "No" or uncert == "No")
