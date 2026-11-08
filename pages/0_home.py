@@ -50,11 +50,11 @@ steps = [
     (":material/model_training:", "6 · Bankruptcy model"),
     (":material/gavel:", "7 · Assessment & report"),
 ]
-cols = st.columns(len(steps))
-for col, (icon, title, text) in zip(cols, steps):
-    with col.container(border=True, height=150):
-        st.markdown(f"### {icon}")
-        st.markdown(f"**{title}**")
-        st.caption(text)
+for row_start in (0, 4):
+    cols = st.columns(4)
+    for i, (col, (icon, title)) in enumerate(zip(cols, steps[row_start:row_start + 4]), start=row_start):
+        with col.container(border=True, key=f"card-workflow-{i}"):
+            st.markdown(f"### {icon}")
+            st.markdown(f"**{title}**")
 
 shared.next_step("pages/1_company_profile.py", "Start with step 1: Company profile")
