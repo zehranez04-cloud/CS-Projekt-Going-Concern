@@ -42,7 +42,7 @@ with c2:
 st.divider()
 st.subheader("Workflow")
 steps = [
-    (":material/domain:", "1 · Company profile")
+    (":material/domain:", "1 · Company profile"),
     (":material/upload_file:", "2 · Financial statements"),
     (":material/monitoring:", "3 · Ratio analysis"),
     (":material/checklist:", "4 · Questionnaire"),
