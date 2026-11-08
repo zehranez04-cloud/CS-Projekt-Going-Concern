@@ -67,7 +67,7 @@ prev = ss.conclusion
 c1, c2, c3 = st.columns(3)
 basis = c1.radio("Is the going concern basis of accounting appropriate?", ["Yes", "No"],
                  index=0 if prev.get("basis", True) else 1)
-uncert = c2.radio("Does a material uncertainty exist?", ["No", "Yes"],
+uncert = c2.radio("Does a material uncertainty exist?", ["Yes", "No"],
                   index=0 if prev.get("uncertainty") else 1, disabled=basis == "No")
 discl = c3.radio("Is it adequately disclosed in the notes?", ["Yes", "No"],
                  index=0 if prev.get("disclosed", True) else 1,
