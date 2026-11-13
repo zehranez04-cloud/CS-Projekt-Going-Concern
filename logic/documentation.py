@@ -234,10 +234,10 @@ def build_pdf(engagement, years, result, legal_tests, liquidity_result, ml_info,
     n_rows = max([len(v) for v in columns.values()] + [1])
     pdf.set_font("Helvetica", "", 8)
     pdf.set_text_color(40, 40, 40)
-    pdf.set_draw_color(220, 226, 230)                   # light grey lines
+    pdf.set_draw_color(150, 160, 166)                   # light grey lines
     pdf.set_fill_color(255, 255, 255)                   # white cells (reset from the dots)
     with pdf.table(col_widths=(50, 30, 64, 36), line_height=4.5, text_align="LEFT", v_align="TOP",
-                   borders_layout="HORIZONTAL_LINES", cell_fill_mode="NONE",
+                   borders_layout="ALL", cell_fill_mode="NONE",
                    headings_style=FontFace(emphasis="BOLD", fill_color=(238, 242, 244))) as table:
         table.row(categories)                           # header row = categories
         for i in range(n_rows):
