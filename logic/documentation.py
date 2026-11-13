@@ -15,6 +15,7 @@ from datetime import date, datetime
 import matplotlib
 import pandas as pd
 from fpdf import FPDF
+from fpdf.fonts import FontFace
 
 matplotlib.use("Agg")  # render charts without a screen
 import matplotlib.pyplot as plt  # noqa: E402  (must come after matplotlib.use)
@@ -227,8 +228,25 @@ def build_pdf(engagement, years, result, legal_tests, liquidity_result, ml_info,
 
     # --- Warning signals -----------------------------------------------------------
     pdf.h2("8. All warning signals")
-    for source, text in result["signals"] or [("-", "No warning signals")]:
-        pdf.para(f"- {source}: {text}", size=9)
+    # Sort by category so that all signals of one category stand together
+    order = ["Ratio", "Legal", "Questionnaire", "Profile"]
+    signals = sorted(result["signals"], key=lambda s: order.index(s[0]) if s[0] in order else len(order))
+    signals = signals or [("-", "No warning signals")]
+    pdf.set_font("Helvetica", "", 9)
+    pdf.set_text_color(40, 40, 40)
+    pdf.set_draw_color(220, 226, 230)                   # light grey lines
+    pdf.set_fill_color(255, 255, 255)                   # white cells (reset from the dots)
+    with pdf.table(col_widths=(35, 145), line_height=5.5, text_align="LEFT",
+                   borders_layout="HORIZONTAL_LINES", cell_fill_mode="NONE",
+                   headings_style=FontFace(emphasis="BOLD", fill_color=(238, 242, 244))) as table:
+        table.row(["Category", "Warning signal"])       # header row
+        previous = None
+        for source, text in signals:
+            # Show the category only in the first row of each group (Ratio, Legal, ...)
+            table.row([_t(source) if source != previous else "", _t(text)])
+            previous = source
+
+
 
     pdf.ln(4)
     pdf.para("This working paper was prepared with the Going Concern Audit app. The app supports "
