@@ -227,7 +227,7 @@ def build_pdf(engagement, years, result, legal_tests, liquidity_result, ml_info,
         pdf.para("Model not available.")
 
     # --- Warning signals -----------------------------------------------------------
-   pdf.h2("8. All warning signals")
+    pdf.h2("8. All warning signals")
     # One column per category, the signals of each category listed below each other
     categories = ["Ratio", "Legal", "Questionnaire", "Profile"]
     columns = {c: [text for source, text in result["signals"] if source == c] for c in categories}
@@ -244,9 +244,10 @@ def build_pdf(engagement, years, result, legal_tests, liquidity_result, ml_info,
             # Row i shows the i-th signal of every category ("-" if there is none)
             table.row([_t(columns[c][i]) if i < len(columns[c]) else ("-" if i == 0 else "")
                        for c in categories])
+            
     pdf.ln(4)
     pdf.para("This working paper was prepared with the Going Concern Audit app. The app supports "
-             "the auditor; the conclusion is the auditor's professional judgement (ISA 570).", size=8)
+                "the auditor; the conclusion is the auditor's professional judgement (ISA 570).", size=8)
     return bytes(pdf.output())
 
 
