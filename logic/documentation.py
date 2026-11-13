@@ -228,22 +228,23 @@ def build_pdf(engagement, years, result, legal_tests, liquidity_result, ml_info,
 
     # --- Warning signals -----------------------------------------------------------
     pdf.h2("8. All warning signals")
-    # One column per category, the signals of each category listed below each other
-    categories = ["Ratio", "Legal", "Questionnaire", "Profile"]
-    columns = {c: [text for source, text in result["signals"] if source == c] for c in categories}
-    n_rows = max([len(v) for v in columns.values()] + [1])
-    pdf.set_font("Helvetica", "", 8)
+    # Sort by category so that all signals of one category stand together
+    order = ["Ratio", "Legal", "Questionnaire", "Profile"]
+    signals = sorted(result["signals"], key=lambda s: order.index(s[0]) if s[0] in order else len(order))
+    signals = signals or [("-", "No warning signals")]
+    pdf.set_font("Helvetica", "", 9)
     pdf.set_text_color(40, 40, 40)
-    pdf.set_draw_color(150, 160, 166)                   # light grey lines
+    pdf.set_draw_color(220, 226, 230)                   # light grey lines
     pdf.set_fill_color(255, 255, 255)                   # white cells (reset from the dots)
-    with pdf.table(col_widths=(50, 30, 64, 36), line_height=4.5, text_align="LEFT", v_align="TOP",
-                   borders_layout="ALL", cell_fill_mode="NONE",
+    with pdf.table(col_widths=(35, 145), line_height=5.5, text_align="LEFT",
+                   borders_layout="HORIZONTAL_LINES", cell_fill_mode="NONE",
                    headings_style=FontFace(emphasis="BOLD", fill_color=(238, 242, 244))) as table:
-        table.row(categories)                           # header row = categories
-        for i in range(n_rows):
-            # Row i shows the i-th signal of every category ("-" if there is none)
-            table.row([_t(columns[c][i]) if i < len(columns[c]) else ("-" if i == 0 else "")
-                       for c in categories])
+        table.row(["Category", "Warning signal"])       # header row
+        previous = None
+        for source, text in signals:
+            # Show the category only in the first row of each group (Ratio, Legal, ...)
+            table.row([_t(source) if source != previous else "", _t(text)])
+            previous = source
             
     pdf.ln(4)
     pdf.para("This working paper was prepared with the Going Concern Audit app. The app supports "
