@@ -99,18 +99,18 @@ Without API key and model the app still works with the sample companies.
 | 7. Contributions & GenAI | Table below (present it in the video) |
 | 8. Video | 4 minutes, own voice |
 
-## Contribution matrix (fill in: L = lead, C = contributed, R = reviewed)
+## Contribution matrix
 
 | Part | Files | Franco | Juled | Maiara | Nicole | Zehra |
 |---|---|---|---|---|---|---|
-| Concept, problem statement | `0_home.py`, README | | | | | |
-| Company profile | `1_company_profile.py`, `data_input.py` | | | | | |
-| Financial statements & AI | `2_financial_statements.py`, `data_input.py` | | | | | |
-| Ratios & legal tests | `3_ratio_analysis.py`, `analysis.py` | | | | | |
-| ISA 570 questionnaire | `4_questionnaire.py`, `assessment.py` | | | | | |
-| Liquidity planner | `5_liquidity_planner.py`, `analysis.py` | | | | | |
+| Concept, problem statement | `0_home.py`, README | | | | |x|
+| Company profile | `1_company_profile.py`, `data_input.py` | | | | |x|
+| Financial statements & AI | `2_financial_statements.py`, `data_input.py` |x| | | |x|
+| Ratios & legal tests | `3_ratio_analysis.py`, `analysis.py` | |x| | | |
+| ISA 570 questionnaire | `4_questionnaire.py`, `assessment.py` | | | |x| |
+| Liquidity planner | `5_liquidity_planner.py`, `analysis.py` | | |x| | |
 | Machine learning | `6_bankruptcy_model.py`, `ml_model.py` | | | | | |
-| Assessment, PDF, database | `7_assessment_report.py`, `8_audit_files.py`, `assessment.py`, `documentation.py` | | | | | |
+| Assessment, PDF, database | `7_assessment_report.py`, `8_audit_files.py`, `assessment.py`, `documentation.py` | | | | |x|
 | Video | – | | | | | |
 
 **Use of generative AI** – answer in the video: Which tools did we use? For which parts?
