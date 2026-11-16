@@ -3,6 +3,7 @@
 #First to show what this page does:
     #1. The user sets how strongly each source counts (weights of the components).
     #2. The app combines ratios, questionnaire and ML model into one going concern risk and shows it as a gauge, traffic light and list of warning signals.
+    #   Two charts show how the score is composed and whether the risk level depends on the weighting.
     #3. The auditor records his/her own conclusion (ISA 570.17-23); the app derives the implication for the auditor's report.
     #4. Everything is documented: PDF working paper for download and saving as an audit file in the database.
 
@@ -86,6 +87,60 @@ for col, (key, label) in zip(cols, [("quantitative", "Ratios"), ("qualitative", 
 with st.expander(f"All warning signals ({len(res['signals'])})", expanded=True):
     for source, text in res["signals"] or [("–", "No warning signals")]:                   # if the list is empty: "No warning signals"
         st.markdown(f"- **{source}:** {text}")                                             # e.g. "- Ratio: Cash ratio: 0.02"
+
+# ---------------------------------------------------------------------------
+# Composition and robustness of the score
+# The auditor has to be able to explain the result (ISA 230: documentation). Therefore we show
+# (1) how much each source contributes to the score and (2) whether the risk level would change
+# with a different weighting of ratios and questionnaire.
+# Use of generative AI: this block was written with the help of Claude (Anthropic) and was checked and tested by us.
+# ---------------------------------------------------------------------------
+st.subheader("Composition and robustness of the score", anchor=False)
+c1, c2 = st.columns(2, gap="large")
+
+# Left: one stacked bar. Each segment = weight x score of one source; the whole bar = overall score.
+with c1:
+    st.caption("Contribution of each source to the overall score (weight × score).")
+    fig = go.Figure()
+    # one colour per source (dark blue, light blue, grey); the traffic-light colours stay reserved for risk
+    for row, colour in zip(assessment.score_breakdown(res), ["#1E2B33", "#5B8DB8", "#A0A0A0"]):
+        if row["weight"] == 0:                                             # source not used -> no segment
+            continue
+        fig.add_bar(y=["Score"], x=[row["contribution"] * 100], orientation="h",   # horizontal bar, in %
+                    name=row["label"], marker_color=colour,
+                    # text shown when the mouse is over the segment
+                    hovertemplate=(f"{row['label']}: weight {row['weight']:.0%} × score "
+                                   f"{row['score']:.0%} = {row['contribution']:.1%}<extra></extra>"))
+    fig.update_layout(barmode="stack", height=200, margin=dict(t=10, b=0, l=0, r=10),
+                      xaxis=dict(range=[0, 100], dtick=25, ticksuffix=" %"), yaxis=dict(visible=False),
+                      legend=dict(orientation="h", y=-0.5))                 # legend below the bar
+    st.plotly_chart(fig, width="stretch")
+
+# Right: line chart. x = share of the ratios, y = overall score; the background shows the three risk zones.
+with c2:
+    st.caption("Score for every split between ratios and questionnaire (ML share unchanged).")
+    sens = assessment.weight_sensitivity(res)                               # list of dicts, see logic/assessment.py
+    fig = go.Figure()
+    # coloured zones as in the gauge above: low (green), medium (amber), high (red)
+    for low, high, colour in [(0, 30, shared.GREEN_HEX), (30, 60, shared.AMBER_HEX), (60, 100, shared.RED_HEX)]:
+        fig.add_hrect(y0=low, y1=high, fillcolor=colour, opacity=0.25, line_width=0)
+    fig.add_scatter(x=[r["ratio_share"] * 100 for r in sens], y=[r["score"] * 100 for r in sens],
+                    mode="lines+markers", line=dict(color="#1E2B33"), name="Score",
+                    hovertemplate="Ratios %{x:.0f} %: score %{y:.0f} %<extra></extra>")
+    fig.update_layout(height=200, margin=dict(t=10, b=0, l=0, r=10), showlegend=False,
+                      xaxis=dict(title="Share of ratios (rest: questionnaire)", ticksuffix=" %"),
+                      yaxis=dict(range=[0, 100], ticksuffix=" %"))
+    st.plotly_chart(fig, width="stretch")
+
+# One sentence that tells the auditor how much the result depends on the weighting
+levels = list(dict.fromkeys(r["level"] for r in sens))      # levels that occur, without duplicates, in order
+if res["knock_outs"]:
+    st.info("The risk level does not depend on the weighting: a knock-out criterion sets it to High.")
+elif len(levels) == 1:
+    st.success(f"Robust result: the risk level is **{levels[0]}** for every weighting of ratios and questionnaire.")
+else:
+    st.warning("The risk level depends on the weighting (" + " / ".join(levels) + "). "
+               "Document why the chosen weights are appropriate for this client.")
 
 # ---------------------------------------------------------------------------
 # Auditor's conclusion (ISA 570.17-23) - professional judgement
