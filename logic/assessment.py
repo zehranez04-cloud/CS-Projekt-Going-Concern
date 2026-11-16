@@ -136,11 +136,37 @@ def evaluate_questionnaire(answers):
 #
 # The app SUPPORTS the auditor. The final conclusion is a matter of professional
 # judgement (ISA 570.17) and is recorded separately by the auditor.
+#
+# Every score in this section follows the same rule: 0 = no risk, 1 = maximum
+# risk. Because all three sources use the same scale, they can be combined in
+# one weighted average.
+#
+# Worked example (ML model not trained, default weights 0.4 / 0.4):
+#     ratios 0.70, questionnaire 0.50
+#     score = (0.4 * 0.70 + 0.4 * 0.50) / (0.4 + 0.4) = 0.60 -> "High"
+#
+# Use of generative AI: the comments in this section and the functions
+# level_for(), score_breakdown() and weight_sensitivity() were written with
+# the help of Claude (Anthropic) and were checked and tested by us.
 # ============================================================================
 
+# Default weights of the three sources. Ratios and questionnaire count the same
+# (40 % each): the ratios show the past (annual report), the questionnaire shows
+# the next 12 months (ISA 570.A3). The ML model counts less (20 %) because it is
+# trained on Polish companies and can only partly be transferred to Swiss firms.
+# The auditor can change the weights with the sliders on page 7.
 DEFAULT_WEIGHTS = {"quantitative": 0.4, "qualitative": 0.4, "ml": 0.2}
+
+# Names of the three sources as shown to the user (internal name -> label)
+COMPONENT_LABELS = {"quantitative": "Ratios", "qualitative": "ISA 570 questionnaire",
+                    "ml": "ML model"}
+
+# Risk levels: (upper limit of the score, name, traffic-light colour).
+# score below 0.30 -> Low, below 0.60 -> Medium, everything else -> High.
+# The last limit is 1.01 (not 1.00) so that a score of exactly 1.0 is still "High".
 LEVELS = [(0.30, "Low", GREEN), (0.60, "Medium", AMBER), (1.01, "High", RED)]
 
+# Text shown next to the traffic light: what the auditor has to do at each level
 LEVEL_TEXT = {
     "Low": ("No significant events or conditions identified. The going concern basis of "
             "accounting appears appropriate. Document the assessment (ISA 570.10-12)."),
@@ -153,48 +179,126 @@ LEVEL_TEXT = {
 }
 
 
-def assess(years, answers, liquidity_result=None, ml_score=None, weights=None, profile=None):
-    weights = dict(weights or DEFAULT_WEIGHTS)
-    if ml_score is None:
-        weights["ml"] = 0.0                       # model not available -> ignore
-    total_w = sum(weights.values()) or 1.0
+def level_for(score):
+    """Turns a score (0-1) into a risk level, e.g. 0.45 -> ("Medium", "amber").
 
-    latest = years[-1]
-    quant = analysis.quantitative_score(years)
-    qual = evaluate_questionnaire(answers)
+    Goes through LEVELS from low to high and returns the first level whose
+    upper limit is above the score."""
+    for limit, name, colour in LEVELS:
+        if score < limit:
+            return name, colour
+    return LEVELS[-1][1], LEVELS[-1][2]            # safety net: scores above 1 count as "High"
+
+
+def assess(years, answers, liquidity_result=None, ml_score=None, weights=None, profile=None):
+    """Combines the results of all modules into one going concern risk.
+
+    years             list of financial years, oldest first (from the ratio analysis)
+    answers           dict question id -> True (Yes) / False (No)
+    liquidity_result  result of the liquidity planner (None if not prepared)
+    ml_score          bankruptcy probability of the ML model, 0-1 (None if not trained)
+    weights           dict with the weights of the three sources (None = default)
+    profile           company profile (adds warning signals, e.g. for start-ups)
+
+    Returns a dict with the overall score (0-1), the risk level and its colour,
+    the score of each source, the weights used, the triggered knock-out criteria,
+    all warning signals and the recommendation text."""
+
+    # ---- Step 1: weights ------------------------------------------------------
+    weights = dict(weights or DEFAULT_WEIGHTS)     # dict(...) makes a copy -> the sliders' values are not changed
+    if ml_score is None:
+        weights["ml"] = 0.0                        # model not available -> ignore
+    total_w = sum(weights.values()) or 1.0         # "or 1.0": avoids dividing by 0 if all sliders are at 0
+
+    # ---- Step 2: one score (0-1) per source ------------------------------------
+    latest = years[-1]                             # latest financial year (last element of the list)
+    quant = analysis.quantitative_score(years)     # weighted share of critical ratios
+    qual = evaluate_questionnaire(answers)         # dict; the score itself is qual["score"]
     parts = {"quantitative": quant, "qualitative": qual["score"], "ml": ml_score or 0.0}
+
+    # ---- Step 3: weighted average -----------------------------------------------
+    # Each score is multiplied by its weight; dividing by the sum of the weights
+    # normalises them to 100 % (so the sliders do not have to add up to 1).
     score = sum(weights[k] * parts[k] for k in parts) / total_w
 
-    # ---- Knock-out criteria ------------------------------------------------
+    # ---- Step 4: knock-out criteria -----------------------------------------------
+    # Some facts are so serious that an average would hide them. Example: a company
+    # with good ratios that cannot pay its bills in month 3. If one of the criteria
+    # below is met, the risk is "High" regardless of the score.
     knock_outs = []
-    if analysis.over_indebtedness(latest)["status"] == RED:
+    if analysis.over_indebtedness(latest)["status"] == RED:          # liabilities exceed assets
         knock_outs.append("Over-indebtedness (CO Art. 725b)")
     if liquidity_result and liquidity_result["first_shortfall_measures"] is not None:
+        # the liquidity plan shows a shortfall even after the restructuring measures
         knock_outs.append(f"Liquidity shortfall in month {liquidity_result['first_shortfall_measures']} "
                           "(after planned restructuring measures, CO Art. 725)")
-    knock_outs += [f"{q.id}: {q.text}" for q in qual["knock_outs"]]
+    knock_outs += [f"{q.id}: {q.text}" for q in qual["knock_outs"]]  # KO questions answered with "Yes"
 
-    level, colour = next((name, col) for limit, name, col in LEVELS if score < limit)
+    # ---- Step 5: risk level ---------------------------------------------------------
+    level, colour = level_for(score)               # level according to the score ...
     if knock_outs:
-        level, colour = "High", RED
+        level, colour = "High", RED                # ... overridden by any knock-out criterion
 
-    # ---- Warning signals for the report -------------------------------------
+    # ---- Step 6: warning signals for the report ----------------------------------------
+    # List of (source, text) pairs that explains WHY the risk is what it is.
     signals = []
     for r in analysis.RATIOS:
-        if r.weight and r.status(latest) == RED:
+        if r.weight and r.status(latest) == RED:   # only ratios that count for the score and are critical
             signals.append(("Ratio", f"{r.name}: {analysis.display(r, latest)}"))
     # (Trends are shown on the ratio analysis page, not repeated as warning signals)
-    cap = analysis.capital_loss(latest)
+    cap = analysis.capital_loss(latest)            # capital loss test (half of capital and reserves lost)
     if cap["status"] != GREEN:
         signals.append(("Legal", cap["result"] + " (CO Art. 725a)"))
-    for q in qual["yes"]:
+    for q in qual["yes"]:                          # every question answered with "Yes"
         signals.append(("Questionnaire", f"{q.id}: {q.text}"))
     if profile:
-        signals += profile_signals(profile)
+        signals += profile_signals(profile)        # e.g. young company, dependence on the group
 
     return {"score": score, "level": level, "colour": colour, "parts": parts,
             "weights": weights, "knock_outs": knock_outs, "signals": signals,
             "text": LEVEL_TEXT[level], "questionnaire": qual}
+
+
+def score_breakdown(result):
+    """Shows how the overall score is made up.
+
+    result: the dict returned by assess().
+    Returns one dict per source with its score, its normalised weight and its
+    contribution to the overall score (weight x score). The contributions add
+    up to the overall score, e.g. 0.35 (ratios) + 0.25 (questionnaire) = 0.60."""
+    total_w = sum(result["weights"].values()) or 1.0
+    rows = []
+    for key, label in COMPONENT_LABELS.items():
+        weight = result["weights"][key] / total_w              # share of the total weight, 0-1
+        rows.append({"key": key, "label": label, "score": result["parts"][key],
+                     "weight": weight, "contribution": weight * result["parts"][key]})
+    return rows
+
+
+def weight_sensitivity(result, steps=11):
+    """Tests whether the risk level depends on the chosen weighting.
+
+    The weighting between ratios and questionnaire is a judgement call. This
+    function therefore recalculates the score for every split between the two,
+    from "questionnaire only" (ratio share 0 %) to "ratios only" (100 %).
+    The share of the ML model stays as chosen by the auditor.
+
+    result: the dict returned by assess().
+    Returns a list of dicts: ratio_share (0-1), score (0-1), level.
+    If the level is the same in every row, the result is robust."""
+    parts = result["parts"]
+    total_w = sum(result["weights"].values()) or 1.0
+    ml_share = result["weights"]["ml"] / total_w               # stays fixed
+    rest = 1.0 - ml_share                                      # is split between ratios and questionnaire
+    rows = []
+    for i in range(steps):
+        ratio_share = i / (steps - 1)                          # 0.0, 0.1, ..., 1.0 (for steps = 11)
+        score = (rest * ratio_share * parts["quantitative"]
+                 + rest * (1 - ratio_share) * parts["qualitative"]
+                 + ml_share * parts["ml"])
+        level = "High" if result["knock_outs"] else level_for(score)[0]   # knock-outs always win
+        rows.append({"ratio_share": ratio_share, "score": score, "level": level})
+    return rows
 
 
 # ---------------------------------------------------------------------------
