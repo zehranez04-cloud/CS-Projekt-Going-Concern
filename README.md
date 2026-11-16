@@ -98,6 +98,7 @@ Without API key and model the app still works with the sample companies.
 | Liquidity planner | `5_liquidity_planner.py`, `analysis.py` | | | | | |
 | Machine learning | `6_bankruptcy_model.py`, `ml_model.py` | | | | | |
 | Assessment, PDF, database | `7_assessment_report.py`, `8_audit_files.py`, `assessment.py`, `documentation.py` | | | | |X|
+| Combined risk verdict (weighting, score composition, robustness check) | `assessment.py`, `7_assessment_report.py` | | |X| | |
 | Video | – | | | | | |
 
 **Use of generative AI** – answer in the video: Which tools did we use? For which parts?
