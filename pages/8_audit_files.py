@@ -7,7 +7,6 @@
 # This tool is important, as it is a crucial part of the auditing process to keep everything documented 
 # -> in the database everything concluded from the audits is saved: figures, profile, questionnaire, liquidity plan and auditor's conclusion
 
-#lkjkj 
 import streamlit as st
 
 import shared                         # helper functions used by all pages
