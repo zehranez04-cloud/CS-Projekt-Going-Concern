@@ -390,7 +390,9 @@ def sample_table(name):                                                         
 #     4. The auditor reviews and can correct every number before the analysis.
 # ============================================================================
 
-# We define which model to use for the AI import. The default is "claude-sonnet-5-5", which is a Claude 5 model with a 16k token context window. It can be changed in the app settings.
+# We define which Claude model is used for the AI import (default: "claude-sonnet-5-5").
+# Another model can be set without changing the code: AI_MODEL in .streamlit/secrets.toml
+# (read in api_settings() on page 2).
 DEFAULT_MODEL = "claude-sonnet-5-5"
 
 #----------------------------------------------------------------------------
