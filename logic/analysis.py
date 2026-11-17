@@ -357,10 +357,18 @@ def quantitative_score(years):
 # two scenarios:
 #     base case      = current business without measures
 #     with measures  = base case + planned restructuring measures
+#
+# The result is used three times: on page 5 (charts), in the legal test
+# "impending insolvency" (impending_insolvency above) and as a knock-out
+# criterion in the overall assessment (assess() in logic/assessment.py).
+#
+# Use of generative AI: the comments in this section were written with the help of Claude (Anthropic) and checked by us.
 # ============================================================================
 
+# Labels of the 12 plan months: ["M1", "M2", ..., "M12"] (range(1, 13) = 1 to 12)
 MONTHS = [f"M{i}" for i in range(1, 13)]
 
+# Types of restructuring measures the user can choose from on page 5 (drop-down list)
 MEASURE_TYPES = [
     "Capital increase", "New or extended credit line", "Shareholder loan",
     "Sale of non-core assets", "Cost reduction", "Deferral of payments",
@@ -372,13 +380,20 @@ def default_plan(fy):
     """Starting point derived from the latest financial year: receipts =
     revenue / 12, payments chosen so that the monthly net cash flow equals
     the operating cash flow / 12. The auditor/client adjusts these figures."""
-    receipts = round(fy.revenue / 12, -3)
+    # round(..., -3) rounds to whole thousands, e.g. 123 456 -> 123 000
+    receipts = round(fy.revenue / 12, -3)               # monthly receipts = annual revenue / 12
+    # payments chosen so that receipts - payments = operating cash flow / 12
     payments = round(receipts - fy.ocf / 12, -3)
+    # Table with 12 rows (one per month); [x] * 12 = the same value in every month.
+    # Debt service (interest and repayments) starts at 0 and is entered by the user.
     return pd.DataFrame({"Month": MONTHS, "Receipts": [receipts] * 12,
                          "Operating payments": [payments] * 12,
                          "Debt service": [0.0] * 12})
 
 
+# Empty table for the restructuring measures (filled in by the user on page 5).
+# The data types are fixed so that the table editor shows the right input fields:
+# text for name and type, whole number for the month, decimal number for the amount.
 def empty_measures():
     return pd.DataFrame({"Measure": pd.Series(dtype="str"),
                          "Type": pd.Series(dtype="str"),
@@ -392,28 +407,37 @@ def evaluate_plan(opening_cash, credit_line, plan, measures):
     Headroom = cash balance + undrawn committed credit line.
     A shortfall occurs in the first month in which headroom becomes negative.
     """
-    plan = plan.fillna(0)
+    plan = plan.fillna(0)                 # empty cells count as 0
+    # Net cash flow per month = money in - money out (list with 12 numbers)
     net = (plan["Receipts"] - plan["Operating payments"] - plan["Debt service"]).tolist()
 
-    extra = [0.0] * 12
+    # Additional cash from restructuring measures per month
+    extra = [0.0] * 12                    # start: no measures in any month
+    # go through every measure; rows without month or amount are ignored (dropna)
     for _, m in measures.dropna(subset=["Month", "Amount"]).iterrows():
         month = int(m["Month"])
-        if 1 <= month <= 12:
-            extra[month - 1] += float(m["Amount"])
+        if 1 <= month <= 12:              # only months within the plan
+            extra[month - 1] += float(m["Amount"])   # month 1 = position 0 in the list
 
+    # Inner helper function: runs through the 12 months for one scenario.
+    # add = additional cash per month (zeros for the base case, measures otherwise)
     def run(add):
-        cash, balances = opening_cash, []
+        cash, balances = opening_cash, []     # start with the cash at the beginning of the plan
         for i in range(12):
-            cash += net[i] + add[i]
+            cash += net[i] + add[i]           # cash at the end of month i+1
             balances.append(cash)
+        # headroom = cash + unused credit line = money that is really available
         headroom = [b + credit_line for b in balances]
+        # first month with negative headroom (= company cannot pay); None if it never happens
         shortfall = next((i + 1 for i, h in enumerate(headroom) if h < 0), None)
         return balances, headroom, shortfall
 
-    bal_b, head_b, short_b = run([0.0] * 12)
-    bal_m, head_m, short_m = run(extra)
-    avg_burn = -sum(net) / 12
-    available = opening_cash + credit_line
+    bal_b, head_b, short_b = run([0.0] * 12)      # scenario 1: base case, without measures
+    bal_m, head_m, short_m = run(extra)           # scenario 2: with the restructuring measures
+    avg_burn = -sum(net) / 12                     # average monthly cash outflow (positive = money is lost)
+    available = opening_cash + credit_line        # liquidity available at the start
+    # All results in one dictionary; "_base" = without, "_measures" = with measures.
+    # first_shortfall_measures is the knock-out criterion in assess() (logic/assessment.py).
     return {
         "balance_base": bal_b, "headroom_base": head_b,
         "balance_measures": bal_m, "headroom_measures": head_m,
