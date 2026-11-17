@@ -92,10 +92,10 @@ Without API key and model the app still works with the sample companies.
 |---|---|---|---|---|---|---|
 | Concept, problem statement | `0_home.py`, README |X| | | | |
 | Company profile | `1_company_profile.py`, `data_input.py` | | | | |X|
-| Financial statements & AI | `2_financial_statements.py`, `data_input.py` |X| | | |X|
+| Financial statements & AI | `2_financial_statements.py`, `data_input.py` |X| |X| |X|
 | Ratios & legal tests | `3_ratio_analysis.py`, `analysis.py` | | | | | |
 | ISA 570 questionnaire | `4_questionnaire.py`, `assessment.py` | | | |X| |
-| Liquidity planner | `5_liquidity_planner.py`, `analysis.py` | | | | | |
+| Liquidity planner | `5_liquidity_planner.py`, `analysis.py` | |X|X| | |
 | Machine learning | `6_bankruptcy_model.py`, `ml_model.py` | | | | | |
 | Assessment, PDF, database | `7_assessment_report.py`, `8_audit_files.py`, `assessment.py`, `documentation.py` | | | | |X|
 | Combined risk verdict (weighting, score composition, robustness check) | `assessment.py`, `7_assessment_report.py` | | |X| | |
