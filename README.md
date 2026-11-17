@@ -96,7 +96,7 @@ Without API key the app still works with the sample companies.
 | Concept, problem statement | `0_home.py`, README |X| | | | |
 | Company profile | `1_company_profile.py`, `data_input.py` | | | | |X|
 | Financial statements & AI | `2_financial_statements.py`, `data_input.py` |X| |X| |X|
-| Ratios & legal tests | `3_ratio_analysis.py`, `analysis.py` | | | | | |
+| Ratios & legal tests | `3_ratio_analysis.py`, `analysis.py` | | |X| | |
 | ISA 570 questionnaire | `4_questionnaire.py`, `assessment.py` | | | |X| |
 | Liquidity planner | `5_liquidity_planner.py`, `analysis.py` | |X|X| | |
 | Machine learning | `6_bankruptcy_model.py`, `ml_model.py` | | |X| | |
