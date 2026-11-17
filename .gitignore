@@ -1,0 +1,9 @@
+# Secret API key - never upload
+.streamlit/secrets.toml
+
+# Files Python creates automatically
+__pycache__/
+*.pyc
+
+# Local virtual environment
+.venv/
