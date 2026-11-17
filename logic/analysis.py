@@ -7,11 +7,12 @@ Sections:
     3. 12-month liquidity planner (CO Art. 725)
 """
 
-import math
-from dataclasses import dataclass
+import math                                   # isnan / isfinite: test for missing or infinite values
+from dataclasses import dataclass             # short way to define a class that mainly stores data
 
 import pandas as pd
 
+# thresholds(industry, key) returns the (green, red) limits of a ratio for the selected industry
 from logic.data_input import thresholds
 
 
@@ -26,6 +27,10 @@ from logic.data_input import thresholds
 #     "grey"   = cannot be assessed (missing data)
 # ============================================================================
 
+# Section 1 (legal tests) and section 2 (ratios): comments on what each function does and why.
+# Use of generative AI: these comments were written with the help of Claude (Anthropic) and checked by us.
+
+# The four status values as constants, so a typo ("gren") causes an error instead of a silent bug
 GREEN, AMBER, RED, GREY = "green", "amber", "red", "grey"
 # Points per traffic-light colour, used for the quantitative score (see quantitative_score below):
 # green = no risk (0), amber = half (0.5), red = full risk (1). Grey (cannot be computed) gets no points.
@@ -35,14 +40,18 @@ STATUS_POINTS = {GREEN: 0.0, AMBER: 0.5, RED: 1.0}  # used for the quantitative 
 # ---------------------------------------------------------------------------
 # I) Legal thresholds (Swiss CO)
 # ---------------------------------------------------------------------------
+# Every test returns a dict with the same keys, so page 3 and the PDF can show all tests the same way:
+#   test = name, status = traffic light, result = short result,
+#   detail = figures behind the result, consequence = what the law requires (empty if no problem)
 def capital_loss(fy):
     """CO Art. 725a: half of share capital + legal capital reserves + legal
     retained earnings is no longer covered by net assets (= equity)."""
-    base = fy.share_capital + fy.legal_capital_reserves + fy.legal_retained_earnings
-    limit = base / 2
-    loss = fy.equity < limit
+    base = fy.share_capital + fy.legal_capital_reserves + fy.legal_retained_earnings   # protected capital
+    limit = base / 2                       # half of the protected capital
+    loss = fy.equity < limit               # True if equity is below this limit
     return {
         "test": "Capital loss (CO Art. 725a)",
+        # amber = capital loss but equity still positive; red = equity negative; green = no capital loss
         "status": AMBER if loss and fy.equity >= 0 else (RED if loss else GREEN),
         "result": "Capital loss" if loss else "No capital loss",
         "detail": f"Net assets {fy.equity:,.0f} vs. limit {limit:,.0f} (50% of {base:,.0f})",
@@ -54,7 +63,7 @@ def capital_loss(fy):
 
 def over_indebtedness(fy):
     """CO Art. 725b: liabilities are no longer covered by assets."""
-    over = fy.total_liabilities > fy.total_assets
+    over = fy.total_liabilities > fy.total_assets   # True if the debts are larger than all assets
     return {
         "test": "Over-indebtedness (CO Art. 725b)",
         "status": RED if over else GREEN,
@@ -70,16 +79,18 @@ def over_indebtedness(fy):
 def impending_insolvency(liquidity_result):
     """CO Art. 725: impending insolvency within 12 months. Needs the
     forward-looking liquidity plan - historical statements cannot answer it."""
+    # No liquidity plan yet (page 5) -> grey: this test cannot be answered from the annual report
     if liquidity_result is None:
         return {"test": "Impending insolvency (CO Art. 725)", "status": GREY,
                 "result": "Not assessed yet",
                 "detail": "Complete the 12-month liquidity planner.", "consequence": ""}
-    m = liquidity_result["first_shortfall_base"]
-    if m is None:
+    m = liquidity_result["first_shortfall_base"]   # first month without enough cash (without measures)
+    if m is None:                                  # never short of cash in 12 months -> green
         return {"test": "Impending insolvency (CO Art. 725)", "status": GREEN,
                 "result": "Solvency secured for 12 months",
                 "detail": f"Lowest headroom: {liquidity_result['min_headroom_base']:,.0f}",
                 "consequence": ""}
+    # Shortfall exists: amber if the restructuring measures close the gap, red if they do not
     cured = liquidity_result["first_shortfall_measures"] is None
     return {
         "test": "Impending insolvency (CO Art. 725)",
@@ -94,23 +105,28 @@ def impending_insolvency(liquidity_result):
 # ---------------------------------------------------------------------------
 # II-IV) Ratios with thresholds
 # ---------------------------------------------------------------------------
+# Safe division: "not a number" (nan) instead of an error if the denominator is 0 -> status grey
 def _div(a, b):
     return a / b if b else float("nan")
 
 
+# One ratio = one object with its description. The values themselves are computed by the
+# functions in RATIO_FUNCS, the traffic light by the functions in RATIO_STATUS (both below).
 @dataclass
 class Ratio:
-    key: str
-    name: str
-    group: str
-    formula: str
+    key: str             # internal name, e.g. "cash_ratio"
+    name: str            # name shown in the app
+    group: str           # Liquidity / Cash flow and debt / Capital and profitability
+    formula: str         # formula as text for the user
     unit: str            # "x", "%", "CHF", "years"
     weight: float        # weight in the quantitative score (0 = display only)
-    explanation: str
+    explanation: str     # thresholds as text
 
+    # value of the ratio for one financial year fy
     def value(self, fy):
         return RATIO_FUNCS[self.key](fy)
 
+    # traffic-light colour of the ratio for one financial year fy
     def status(self, fy):
         return RATIO_STATUS[self.key](fy, self.value(fy))
 
@@ -124,6 +140,7 @@ def _band(v, green_from, red_below):
     return RED if v < red_below else AMBER
 
 
+# Formula of every ratio. "lambda f: ..." is a small function that receives one financial year f.
 RATIO_FUNCS = {
     "cash_ratio": lambda f: _div(f.cash, f.current_liabilities),
     "quick_ratio": lambda f: _div(f.cash + f.receivables, f.current_liabilities),
@@ -139,6 +156,8 @@ RATIO_FUNCS = {
 }
 
 
+# Special status rules for ratios where the plain number can be misleading:
+# Net debt / EBITDA: lower is better; a negative EBITDA would give a "good" negative value
 def _net_debt_status(f, v):
     if f.interest_bearing_debt - f.cash <= 0:
         return GREEN                      # net cash position
@@ -153,20 +172,23 @@ def _ind(key):
     return lambda f, v: _band(v, *thresholds(f.industry, key))
 
 
+# Interest coverage: green from 3x, red below 1.5x (EBIT covers the interest less than 1.5 times)
 def _interest_status(f, v):
     if f.interest_expense <= 0:
         return GREEN                      # no interest burden
     return _band(v, 3.0, 1.5)
 
 
+# Debt payback period: years needed to repay the debt from the operating cash flow
 def _payback_status(f, v):
     if f.total_liabilities - f.cash <= 0:
-        return GREEN
+        return GREEN                      # no net debt
     if f.ocf <= 0:
         return RED                        # negative cash flow: debt is never repaid
     return GREEN if v <= 5 else (AMBER if v <= 8 else RED)
 
 
+# Traffic-light rule of every ratio. _ind(...) = thresholds depend on the industry (company profile).
 RATIO_STATUS = {
     "cash_ratio": _ind("cash_ratio"),
     "quick_ratio": _ind("quick_ratio"),
@@ -181,6 +203,9 @@ RATIO_STATUS = {
     "roa": lambda f, v: _band(v, 0.02, 0.0),
 }
 
+# List of all 11 ratios in the order shown on page 3.
+# Arguments of Ratio(...): key, name, group, formula, unit, weight in the score, thresholds as text.
+# Weight 2 = strong going concern indicator (cash flow, net debt, equity), 1 = normal, 0 = display only.
 RATIOS = [
     # II) Liquidity
     Ratio("cash_ratio", "Cash ratio", "Liquidity", "Cash / current liabilities", "x", 1,
@@ -214,7 +239,7 @@ RATIOS = [
           "Net income / total assets", "%", 1,
           "Green >= 2%, red < 0% (ISA 570.A3: substantial operating losses)"),
 ]
-RATIO_BY_KEY = {r.key: r for r in RATIOS}
+RATIO_BY_KEY = {r.key: r for r in RATIOS}      # look up a ratio by its key, e.g. RATIO_BY_KEY["roa"]
 
 
 def fmt(value, unit):
@@ -230,6 +255,7 @@ def fmt(value, unit):
     return f"{value:.2f}"
 
 
+# Ratios whose thresholds change with the industry (defined in logic/data_input.py)
 INDUSTRY_KEYS = {"cash_ratio", "quick_ratio", "current_ratio", "equity_ratio", "ebitda_margin",
                  "net_debt_ebitda"}
 
@@ -238,7 +264,8 @@ def threshold_text(ratio, industry):
     """Thresholds as text for the active industry."""
     if ratio.key not in INDUSTRY_KEYS:
         return ratio.explanation
-    g, r = thresholds(industry, ratio.key)
+    g, r = thresholds(industry, ratio.key)        # g = green limit, r = red limit
+    # show = small function that formats a limit: as percentage for "%" ratios, otherwise as number
     show = (lambda x: f"{x:.0%}") if ratio.unit == "%" else (lambda x: f"{x:g}")
     if ratio.key == "net_debt_ebitda":
         return f"Green <= {show(g)}, red > {show(r)} or EBITDA <= 0 ({industry})"
@@ -266,12 +293,12 @@ def display(ratio, fy):
 def ratio_table(years):
     """All ratios for all years: list of dicts (one per ratio)."""
     rows = []
-    for r in RATIOS:
+    for r in RATIOS:                  # one row per ratio
         row = {"key": r.key, "Ratio": r.name, "Group": r.group, "Formula": r.formula,
                "Thresholds": r.explanation}
         for fy in years:
             v = r.value(fy)
-            row[fy.year] = (v, r.status(fy))
+            row[fy.year] = (v, r.status(fy))      # per year: (value, traffic light)
         rows.append(row)
     return rows
 
@@ -279,6 +306,7 @@ def ratio_table(years):
 # ---------------------------------------------------------------------------
 # Trend analysis (3-5 years)
 # ---------------------------------------------------------------------------
+# For most ratios a higher value is better; for net debt / EBITDA and debt payback lower is better
 HIGHER_IS_BETTER = {k: True for k in RATIO_FUNCS} | {"net_debt_ebitda": False,
                                                      "debt_payback": False}
 
@@ -302,18 +330,23 @@ def trend(ratio_key, years):
     """Direction of a ratio over the available years:
     'improving', 'deteriorating', 'stable' or 'n/a' (fewer than 2 years).
     Uses the slope of a simple linear regression."""
-    vals = [_trend_value(ratio_key, fy) for fy in years]
+    vals = [_trend_value(ratio_key, fy) for fy in years]   # one value per year
+    # points (year number, value); years without a valid value are left out
     pts = [(i, v) for i, v in enumerate(vals) if v is not None and math.isfinite(v)]
-    if len(pts) < 2:
+    if len(pts) < 2:                       # a trend needs at least two years
         return "n/a"
+    # Slope of the regression line (least squares): average change of the ratio per year
     n = len(pts)
-    mx = sum(p[0] for p in pts) / n
-    my = sum(p[1] for p in pts) / n
+    mx = sum(p[0] for p in pts) / n        # average year number
+    my = sum(p[1] for p in pts) / n        # average value
     sxx = sum((p[0] - mx) ** 2 for p in pts)
     slope = sum((p[0] - mx) * (p[1] - my) for p in pts) / sxx
+    # Change relative to the average value, so ratios of different size can be compared
+    # (1e-9 avoids dividing by 0 if the average is 0)
     scale = max(abs(my), 1e-9)
     if abs(slope) / scale < 0.03:     # less than 3% change per year -> stable
         return "stable"
+    # rising is good if higher is better, falling is good if lower is better
     better = slope > 0 if HIGHER_IS_BETTER[ratio_key] else slope < 0
     return "improving" if better else "deteriorating"
 
