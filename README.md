@@ -64,12 +64,15 @@ streamlit run app.py              # 4. start the app
 3. Never upload `secrets.toml` to GitHub (it is excluded in `.gitignore`).
 
 ### Machine learning model
-1. Download the *Polish Companies Bankruptcy* dataset:
-   https://archive.ics.uci.edu/dataset/365/polish+companies+bankruptcy+data
-2. Copy `1year.arff` … `5year.arff` into the folder `data/`.
-3. Open page **6 · Bankruptcy model** in the app and click **Train model now**.
+The Polish dataset (`1year.arff` … `5year.arff`) and the trained model
+(`bankruptcy_model.joblib`) are included in the folder `data/`, so page 6 works
+right away. To retrain (e.g. with another scikit-learn version), delete
+`bankruptcy_model.joblib` and click **Train model now** on page 6.
 
-Without API key and model the app still works with the sample companies.
+Dataset: Tomczak, S. (2016). Polish Companies Bankruptcy [Dataset].
+UCI Machine Learning Repository. https://doi.org/10.24432/C5F600 (licence CC BY 4.0)
+
+Without API key the app still works with the sample companies.
 
 ---
 
