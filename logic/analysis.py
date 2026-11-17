@@ -27,6 +27,8 @@ from logic.data_input import thresholds
 # ============================================================================
 
 GREEN, AMBER, RED, GREY = "green", "amber", "red", "grey"
+# Points per traffic-light colour, used for the quantitative score (see quantitative_score below):
+# green = no risk (0), amber = half (0.5), red = full risk (1). Grey (cannot be computed) gets no points.
 STATUS_POINTS = {GREEN: 0.0, AMBER: 0.5, RED: 1.0}  # used for the quantitative score
 
 
@@ -316,18 +318,35 @@ def trend(ratio_key, years):
     return "improving" if better else "deteriorating"
 
 
+# ---------------------------------------------------------------------------
+# Quantitative score: all ratios in ONE number between 0 and 1.
+# This number is the "Ratios" part of the overall assessment (assess() in logic/assessment.py).
+#
+# Our project concept said: every ratio gets a percentage that is added if it is healthy
+# and deducted if it breaches the threshold. We implemented the same idea as a weighted
+# share, because then the result always stays between 0 and 1:
+#     every ratio gets points for its colour (STATUS_POINTS) times its weight (importance)
+#     score = sum of the points / sum of the maximum possible points
+#
+# Example with three ratios of weight 2, 1 and 1:
+#     red (2 x 1.0) + amber (1 x 0.5) + green (1 x 0.0) = 2.5 points of 4 -> score 0.625
+#
+# Use of generative AI: the comments in this block were written with the help of Claude (Anthropic) and checked by us.
+# ---------------------------------------------------------------------------
 def quantitative_score(years):
     """Weighted share of critical ratios in the latest year (0 = all green,
     1 = all red). Ratios that cannot be computed are ignored."""
-    fy = years[-1]
-    total = points = 0.0
-    for r in RATIOS:
-        st = r.status(fy)
+    fy = years[-1]                     # only the latest financial year counts (trends are shown separately on page 3)
+    total = points = 0.0               # total = maximum possible points, points = points reached
+    for r in RATIOS:                   # go through all ratios defined above
+        st = r.status(fy)              # traffic-light colour of this ratio in the latest year
+        # skip ratios that do not count for the score (weight 0) or cannot be computed (grey),
+        # so missing data does not make the company look better or worse
         if r.weight == 0 or st == GREY:
             continue
-        total += r.weight
-        points += r.weight * STATUS_POINTS[st]
-    return points / total if total else 0.0
+        total += r.weight                         # maximum: as if this ratio were red
+        points += r.weight * STATUS_POINTS[st]    # reached: weight x points of its colour
+    return points / total if total else 0.0       # share 0-1; 0.0 if no ratio could be computed
 
 
 # ============================================================================
