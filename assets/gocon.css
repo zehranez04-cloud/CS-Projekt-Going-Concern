@@ -82,9 +82,44 @@ hr { border-color: var(--color-surface) !important; margin: 2.5rem 0 !important;
 /* Cards that stand side by side in columns get the same height */
 [data-testid="stColumn"] > [data-testid="stVerticalBlock"] { height: 100%; }
 [data-testid="stLayoutWrapper"]:has(> [class*="st-key-card-"]) { flex: 1 1 auto; }
-/* ...except a single info card next to running text (home page) */
+/* ---------- Home page: colour blocks ("bento" layout) --------------------- */
+/* Panels: large rounded colour areas (key starts with "panel-") */
+[class*="st-key-panel-"] {
+  border-radius: var(--radius-window);
+  padding: 2.5rem 2.75rem !important;
+}
+[class*="st-key-panel-"] h1,
+[class*="st-key-panel-"] h2,
+[class*="st-key-panel-"] h3 { margin-top: 0; padding-top: 0; }
+
+.st-key-panel-intro { background: var(--color-warm-surface); padding: 3rem 2.75rem !important; }
+.st-key-panel-intro h5 { color: var(--color-text-muted); font-weight: 500; max-width: 40ch; }
+
+.st-key-panel-problem,
+.st-key-panel-solution { background: var(--color-surface); }
+
+/* Dark section: workflow steps as white cards */
+.st-key-panel-workflow { background: var(--color-text-muted); }
+.st-key-panel-workflow h3,
+.st-key-panel-workflow [data-testid="stHeadingWithActionElements"] h3 { color: var(--color-bg); }
+.st-key-panel-workflow [class*="st-key-card-workflow"] { background: var(--color-bg); }
+.st-key-panel-workflow [class*="st-key-card-workflow"] [role="img"] { color: var(--color-accent); }
+
+/* Right column: dark card + window-light card, together as tall as the left column */
+.st-key-card-who { background: var(--color-text-muted); }
+.st-key-card-who, .st-key-card-who p, .st-key-card-who strong { color: var(--color-bg) !important; }
+.st-key-card-important { background: var(--color-accent-light); }
+.st-key-card-important p, .st-key-card-important strong { color: var(--color-text) !important; }
 [data-testid="stLayoutWrapper"]:has(> .st-key-card-who) { flex: 0 0 auto; }
 .st-key-card-who { height: auto; }
+[data-testid="stLayoutWrapper"]:has(> .st-key-card-important) { flex: 1 1 auto; }
+.st-key-card-who p, .st-key-card-important p { font-size: 1.05rem; line-height: 1.6; }
+
+/* Solution: the list runs in two columns on wide screens */
+@media (min-width: 900px) {
+  .st-key-panel-solution ul { columns: 2; column-gap: 3rem; }
+  .st-key-panel-solution li { break-inside: avoid; }
+}
 
 /* Workflow cards on the home page: icons in line colour */
 [class*="st-key-card-workflow"] [role="img"] { color: var(--color-line); }
@@ -192,7 +227,7 @@ button:focus-visible, a:focus-visible {
 /* ---------- Mobile -------------------------------------------------------- */
 @media (max-width: 640px) {
   [data-testid="stMainBlockContainer"] {
-    padding-top: 2.5rem;
+    padding-top: 4.5rem;
     padding-left: 1.25rem; padding-right: 1.25rem;
     padding-bottom: 4rem;
   }
@@ -200,6 +235,17 @@ button:focus-visible, a:focus-visible {
   h2 { font-size: 1.6rem !important; }
   :root { --radius-window: 20px; --radius-card: 20px; }
   [class*="st-key-card-"] { padding: 1rem 1.1rem !important; }
+  [class*="st-key-panel-"] { padding: 1.5rem 1.25rem !important; }
+  .st-key-panel-intro { padding: 2rem 1.25rem !important; }
+  /* stacked columns: same small gap as between the other blocks */
+  [data-testid="stHorizontalBlock"] { gap: 1rem !important; }
+  /* workflow steps: compact rows with icon and title on one line */
+  .st-key-panel-workflow [class*="st-key-card-workflow"] {
+    flex-direction: row !important; align-items: center; gap: 0.9rem; padding: 0.85rem 1.1rem !important;
+  }
+  .st-key-panel-workflow [class*="st-key-card-workflow"] > div { width: auto !important; }
+  .st-key-panel-workflow [class*="st-key-card-workflow"] h3 { font-size: 1.4rem !important; padding: 0; margin: 0; line-height: 1; }
+  .st-key-panel-workflow [class*="st-key-card-workflow"] p { margin: 0 !important; }
   hr { margin: 1.75rem 0 !important; }
   [data-testid="stPageLink"] a { width: 100%; justify-content: center; }
 }
