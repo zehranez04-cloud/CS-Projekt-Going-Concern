@@ -17,20 +17,22 @@ Folders:  pages/ = what the user sees (one file per step)
           logic/ = calculations (data input, analysis, assessment, ML, documentation)
 """
 
+from pathlib import Path                      # file paths that work on every operating system
+
 import streamlit as st
 
 import shared
 
-st.set_page_config(page_title="Going Concern Audit", page_icon=":material/fact_check:",
+st.set_page_config(page_title="GoCon · Going Concern Audit", page_icon="assets/logo_gc.png",
                    layout="wide")
 shared.init()
 
-# Cards (traffic lights) that stand side by side in columns get the same height
-st.html("""<style>
-[data-testid="stColumn"] > [data-testid="stVerticalBlock"] { height: 100%; }
-[data-testid="stLayoutWrapper"]:has(> [class*="st-key-card-"]) { flex: 1 1 auto; }
-[class*="st-key-card-"] { height: 100%; }
-</style>""")
+# GoCon design: colours, fonts and component styles for all pages (see assets/gocon.css).
+# The file is read here and passed as text, which works in every Streamlit version.
+CSS_FILE = Path(__file__).parent / "assets" / "gocon.css"
+st.html(f"<style>{CSS_FILE.read_text(encoding='utf-8')}</style>")
+# Small GC logo in the top left corner (sidebar and header)
+st.logo("assets/logo_gc.png", size="large")
 
 # ---------------------------------------------------------------------------
 # Navigation: one file per page in the folder pages/

@@ -117,7 +117,7 @@ with c2:
     st.markdown("**Signals from the profile**")
     sig = data_input.profile_signals(p)
     for _, text in sig or [("", "None")]:
-        st.write(("⚠️ " if sig else "") + text)
+        st.write((":material/warning: " if sig else "") + text)
 
 if st.button("Confirm profile", type="primary", icon=":material/check:"):
     ss.profile_confirmed = True

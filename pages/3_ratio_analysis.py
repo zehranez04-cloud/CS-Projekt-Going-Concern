@@ -57,22 +57,19 @@ for group, roman in [("Liquidity", "II"), ("Cash flow and debt", "III"),
         # card: colour = status in the latest year, value, trend and formula below
         with col:
             shared.traffic_light(r.status(latest), r.name, analysis.display(r, latest),
-                             f"{TREND_ICON[tr]} {tr}  \n:blue[{r.formula}]")
+                             f"{TREND_ICON[tr]} {tr}  \n:gray[{r.formula}]")
             
 # ---------------------------------------------------------------------------
 # Table: all years
 # ---------------------------------------------------------------------------
 st.subheader("All years")
 
-# Soft colours for the dots 
-SOFT = {"green": "#8CC9A6", "amber": "#EFCF7A", "red": "#E89A9A", "grey": "#D0D5D8"}
 TREND_TEXT = {"improving": "↗ improving", "deteriorating": "↘ deteriorating",
               "stable": "→ stable", "n/a": "–"}
 
 def dot(status):
-    """Small round dot in the soft colour of the traffic light."""
-    return (f"<span style='display:inline-block;width:9px;height:9px;border-radius:50%;"
-            f"background:{SOFT[status]};margin-right:8px;vertical-align:middle'></span>")
+    """Small round dot in the colour of the traffic light (style: .gc-dot in assets/gocon.css)."""
+    return f"<span class='gc-dot gc-dot-sm gc-dot-{status}'></span>"
 
 
 # The table is built as HTML: it shows all rows at once 
@@ -85,21 +82,13 @@ for group in ["Liquidity", "Cash flow and debt", "Capital and profitability"]:
         cells = "".join(f"<td class='num'>{dot(r.status(fy))}{analysis.display(r, fy)}</td>" for fy in ys)
         body += f"<tr><td>{r.name}</td>{cells}<td class='trend'>{TREND_TEXT[analysis.trend(r.key, ys)]}</td></tr>"
 
-# Show the table; the <style> part defines the layout (double braces {{ }} because of the f-string)
+# Show the table; the layout is defined in assets/gocon.css (.ratios).
+# The wrapper scrolls sideways on small screens instead of squeezing the columns.
 st.html(f"""
-<style>
-  .ratios {{ width:100%; border-collapse:collapse; font-size:14px; color:#1E2B33; }}
-  .ratios th {{ text-align:left; font-weight:600; padding:8px 10px; border-bottom:2px solid #E3E8EB; }}
-  .ratios td {{ padding:7px 10px; border-bottom:1px solid #EEF2F4; }}
-  .ratios .num, .ratios td:first-child {{ white-space:nowrap; }}
-  .ratios .group td {{ background:#F6F8F9; font-weight:600; font-size:12px; color:#5F6B73;
-                       text-transform:uppercase; letter-spacing:0.04em; }}
-  .ratios .trend {{ color:#5F6B73; white-space:nowrap; }}
-</style>
-<table class="ratios">
+<div class="gc-table-wrap"><table class="ratios">
   <tr><th>Ratio</th>{head}<th>Trend</th></tr>
   {body}
-</table>""")
+</table></div>""")
 
 # ---------------------------------------------------------------------------
 # Trend chart with threshold bands (interactive selection)
@@ -112,9 +101,9 @@ x = [fy.year for fy in ys]                    # years on the x-axis
 y = [r.value(fy) for fy in ys]                # values on the y-axis
 # line with markers; marker colour = traffic light of that year
 fig = go.Figure()
-fig.add_scatter(x=x, y=y, mode="lines+markers", line=dict(color="#1E2B33", width=3),
+fig.add_scatter(x=x, y=y, mode="lines+markers", line=dict(color=shared.TEXT, width=3),
                 marker=dict(size=12, color=[shared.HEX[r.status(fy)] for fy in ys],
-                            line=dict(color="#1E2B33", width=1)),
+                            line=dict(color=shared.TEXT, width=1)),
                 hovertemplate="%{x}: %{y:.3f}<extra></extra>")
 fig.update_layout(height=380, margin=dict(t=20, b=20), template="simple_white",
                   yaxis_tickformat=".0%" if r.unit == "%" else None, yaxis_title=r.formula)
@@ -124,15 +113,15 @@ st.caption(f"Thresholds: {analysis.threshold_text(r, latest.industry)}. Marker c
 # Balance sheet structure over time
 st.subheader("Balance sheet structure")
 # Stacked bars: equity, interest-bearing debt and other liabilities per year (= total assets),
-# plus the net income as a red line -> shows how losses eat up the equity
+# plus the net income as an amber line -> shows how losses eat up the equity
 fig = go.Figure()
-fig.add_bar(name="Equity", x=x, y=[fy.equity for fy in ys], marker_color="#055933")
+fig.add_bar(name="Equity", x=x, y=[fy.equity for fy in ys], marker_color=shared.TEXT_MUTED)
 fig.add_bar(name="Interest-bearing debt", x=x, y=[fy.interest_bearing_debt for fy in ys],
-            marker_color="#055885")
+            marker_color=shared.LINE)
 fig.add_bar(name="Other liabilities", x=x,
-            y=[fy.total_liabilities - fy.interest_bearing_debt for fy in ys], marker_color="#A9B8C0")
+            y=[fy.total_liabilities - fy.interest_bearing_debt for fy in ys], marker_color=shared.ACCENT_LIGHT)
 fig.add_scatter(name="Net income", x=x, y=[fy.net_income for fy in ys], mode="lines+markers",
-                line=dict(color="#D64545", width=3))
+                line=dict(color=shared.ACCENT, width=3))
 fig.update_layout(barmode="relative", height=380, margin=dict(t=20, b=20), template="simple_white",
                   legend=dict(orientation="h", y=-0.15))
 st.plotly_chart(fig, width="stretch")

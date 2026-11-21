@@ -4,6 +4,9 @@ import streamlit as st
 
 import shared
 
+# Hero: large GoCon logo in a rounded image window (style: .st-key-hero in assets/gocon.css)
+with st.container(key="hero"):
+    st.image("assets/logo_gocon.png", width="stretch")
 st.title("Going Concern Audit")
 st.markdown("##### Supporting auditors in assessing whether a company can continue as a going concern")
 
@@ -33,7 +36,7 @@ with c1:
         "- A **machine learning model** trained on real bankruptcy data\n"
         "- A combined **risk assessment**, the auditor's conclusion and a **PDF working paper**")
 with c2:
-    with st.container(border=True):
+    with st.container(border=True, key="card-who"):     # key "card-" = card style from gocon.css
         st.markdown("**Who uses it?**  \nExternal auditors (e.g. audit assistants and managers) "
                     "during the planning and completion phase of an audit.")
         st.markdown("**Important**  \nThe app supports professional judgement – it does not "

@@ -184,15 +184,15 @@ fig.add_bar(x=analysis.MONTHS, y=res["headroom_base"], name="Headroom without me
             # for every value h in the results, take red if h is below 0 (not enough money),
             # otherwise take grey. The result is a list of colours, one for each bar.
             # the little coloured square next to the code is only VS Code's colour preview, not part of the code. 
-            marker_color=[shared.RED_HEX if h < 0 else "#A9B8C0" for h in res["headroom_base"]])
+            marker_color=[shared.RED_HEX if h < 0 else shared.LINE for h in res["headroom_base"]])
 
 # Draws a line with dots on top of the bars: the availability liquidity WITH the measures.
-# Bars agains a green line let the reader see at once whether the measures help. 
+# Bars against an amber line let the reader see at once whether the measures help. 
 fig.add_scatter(x=analysis.MONTHS, y=res["headroom_measures"], name="Headroom with measures",
-                mode="lines+markers", line=dict(color=shared.GREEN_HEX, width=3))
+                mode="lines+markers", line=dict(color=shared.ACCENT, width=3))
 
 # Draws a dark horizonat line at 0. Above it we can pay our bills, below it we are in trouble. The line is dark so it is visible even on the red bars.
-fig.add_hline(y=0, line_color="#1E2B33")
+fig.add_hline(y=0, line_color=shared.TEXT)
 
 # Layout settings for the whole chart: 
 # height 380 pixels, a clean white style, small margins at the top and bottom, 

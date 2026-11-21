@@ -1,0 +1,61 @@
+# GoCon design tokens for Streamlit's own elements (buttons, inputs, tables, sidebar, alerts).
+# The same colours are defined as CSS variables in assets/gocon.css and as Python
+# constants in shared.py (for the Plotly charts). If you change a colour, change it in all three.
+
+[theme]
+base = "light"
+
+# --- Brand colours --------------------------------------------------------
+backgroundColor = "#FFFFFF"            # --color-bg
+textColor = "#1A1C1B"                  # --color-text
+secondaryBackgroundColor = "#E9ECEB"   # --color-surface (sidebar, inputs)
+primaryColor = "#9E6129"               # --color-accent (buttons, selected widgets)
+linkColor = "#9E6129"                  # --color-accent
+borderColor = "#86959C"                # --color-line
+dataframeBorderColor = "#E9ECEB"
+dataframeHeaderBackgroundColor = "#E9ECEB"
+codeBackgroundColor = "#E9ECEB"
+showWidgetBorder = true
+showSidebarBorder = false
+
+# Grey and blue (= info boxes) mapped to the brand palette
+grayColor = "#86959C"
+grayTextColor = "#4D585F"              # --color-text-muted
+grayBackgroundColor = "#E9ECEB"
+blueColor = "#9E6129"
+blueTextColor = "#1A1C1B"
+blueBackgroundColor = "#F5EBE0"        # --color-warm-surface (hint boxes)
+violetColor = "#9E6129"
+violetTextColor = "#1A1C1B"
+violetBackgroundColor = "#F5EBE0"
+
+# Traffic light (only exception to the brand palette: risk status), muted tones
+greenColor = "#3F7A5A"
+greenTextColor = "#2F6347"
+greenBackgroundColor = "#E3EEE7"
+yellowColor = "#D1A23A"
+yellowTextColor = "#7A5418"
+yellowBackgroundColor = "#F7EDD6"
+orangeColor = "#D1A23A"
+orangeTextColor = "#7A5418"
+orangeBackgroundColor = "#F7EDD6"
+redColor = "#A9483B"
+redTextColor = "#8A3B30"
+redBackgroundColor = "#F4E3DF"
+
+chartCategoricalColors = ["#4D585F", "#9E6129", "#86959C", "#CFA075", "#1A1C1B"]
+
+# --- Typography (Fontshare) ---------------------------------------------
+font = "Satoshi:https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap, sans-serif"
+headingFont = "Clash Display:https://api.fontshare.com/v2/css?f[]=clash-display@500,600&display=swap, sans-serif"
+headingFontWeights = [600, 600, 500, 500, 500, 500]
+headingFontSizes = ["3.25rem", "2rem", "1.5rem", "1.25rem", "1.1rem", "1rem"]
+baseFontSize = 16
+
+# --- Shapes -----------------------------------------------------------------
+baseRadius = "12px"
+buttonRadius = "full"
+
+[theme.sidebar]
+backgroundColor = "#E9ECEB"
+secondaryBackgroundColor = "#FFFFFF"

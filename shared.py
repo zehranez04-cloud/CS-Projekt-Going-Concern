@@ -19,9 +19,14 @@ import streamlit as st
 from logic import analysis, assessment, data_input, ml_model
 from logic.data_input import table_to_years
 
-GREEN_HEX, AMBER_HEX, RED_HEX, GREY_HEX = "#2E9E6B", "#F2B632", "#D64545", "#A0A0A0"
+# GoCon brand colours, used for the Plotly charts. Same values as the CSS variables in
+# assets/gocon.css and the theme in .streamlit/config.toml.
+BG, TEXT, TEXT_MUTED, LINE = "#FFFFFF", "#1A1C1B", "#4D585F", "#86959C"
+SURFACE, ACCENT, ACCENT_LIGHT, WARM_SURFACE = "#E9ECEB", "#9E6129", "#CFA075", "#F5EBE0"
+
+# Traffic light: the only colours outside the brand palette, used only for the risk status
+GREEN_HEX, AMBER_HEX, RED_HEX, GREY_HEX = "#3F7A5A", "#D1A23A", "#A9483B", "#86959C"
 HEX = {"green": GREEN_HEX, "amber": AMBER_HEX, "red": RED_HEX, "grey": GREY_HEX}
-DOT = {"green": "🟢", "amber": "🟡", "red": "🔴", "grey": "⚪"}
 
 
 def init():
@@ -126,10 +131,9 @@ def traffic_light(status, title, value="", caption=""):
     """Card with a coloured dot, used on several pages."""
     key = "card-" + "".join(ch if ch.isalnum() else "-" for ch in title.lower())
     with st.container(border=True, key = key):
-        st.markdown(f"<div style='display:flex;align-items:center;gap:10px'>"
-                    f"<span style='width:16px;height:16px;border-radius:50%;flex:none;"
-                    f"background:{HEX[status]}'></span><b>{title}</b></div>",
-                    unsafe_allow_html=True)
+        # coloured dot + title; the look is defined in assets/gocon.css (.gc-dot, .gc-card-title)
+        st.markdown(f"<div class='gc-card-title'><span class='gc-dot gc-dot-{status}'></span>"
+                    f"{title}</div>", unsafe_allow_html=True)
         if value:
             st.markdown(f"### {value}")
         if caption:

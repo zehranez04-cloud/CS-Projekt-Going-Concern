@@ -50,7 +50,7 @@ c1, c2 = st.columns([1, 2], gap="large")   # left 1/3 (gauge), right 2/3 (text)
 with c1:
     fig = go.Figure(go.Indicator(
         mode="gauge+number", value=res["score"] * 100, number={"suffix": " %"},         # score 0-1 -> 0-100 %
-        gauge={"axis": {"range": [0, 100]}, "bar": {"color": "#1E2B33"},              # dark pointer bar
+        gauge={"axis": {"range": [0, 100]}, "bar": {"color": shared.TEXT},                 # dark pointer bar
                
                # coloured zones: 0-30 % low (green), 30-60 % medium (amber), 60-100 % high (red)
                "steps": [{"range": [0, 30], "color": shared.GREEN_HEX},
@@ -102,8 +102,8 @@ c1, c2 = st.columns(2, gap="large")
 with c1:
     st.caption("Contribution of each source to the overall score (weight × score).")
     fig = go.Figure()
-    # one colour per source (dark blue, light blue, grey); the traffic-light colours stay reserved for risk
-    for row, colour in zip(assessment.score_breakdown(res), ["#1E2B33", "#5B8DB8", "#A0A0A0"]):
+    # one colour per source (dark, amber, grey from the GoCon palette); the traffic-light colours stay reserved for risk
+    for row, colour in zip(assessment.score_breakdown(res), [shared.TEXT, shared.ACCENT, shared.LINE]):
         if row["weight"] == 0:                                             # source not used -> no segment
             continue
         fig.add_bar(y=["Score"], x=[row["contribution"] * 100], orientation="h",   # horizontal bar, in %
@@ -125,7 +125,7 @@ with c2:
     for low, high, colour in [(0, 30, shared.GREEN_HEX), (30, 60, shared.AMBER_HEX), (60, 100, shared.RED_HEX)]:
         fig.add_hrect(y0=low, y1=high, fillcolor=colour, opacity=0.25, line_width=0)
     fig.add_scatter(x=[r["ratio_share"] * 100 for r in sens], y=[r["score"] * 100 for r in sens],
-                    mode="lines+markers", line=dict(color="#1E2B33"), name="Score",
+                    mode="lines+markers", line=dict(color=shared.TEXT), name="Score",
                     hovertemplate="Ratios %{x:.0f} %: score %{y:.0f} %<extra></extra>")
     fig.update_layout(height=200, margin=dict(t=10, b=0, l=0, r=10), showlegend=False,
                       xaxis=dict(title="Share of ratios (rest: questionnaire)", ticksuffix=" %"),

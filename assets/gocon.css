@@ -1,0 +1,205 @@
+/* ==========================================================================
+   GoCon design system
+   Loaded once for every page in app.py (st.html("assets/gocon.css")).
+   Streamlit's own elements get the same colours and fonts from .streamlit/config.toml,
+   the Plotly charts from the constants in shared.py.
+   ========================================================================== */
+
+/* ---------- Design tokens ------------------------------------------------- */
+:root {
+  /* Brand colours - no other colours are used (exception: traffic light) */
+  --color-bg: #FFFFFF;            /* main colour, ~70 % of the surface */
+  --color-text: #1A1C1B;          /* body text, navigation */
+  --color-text-muted: #4D585F;    /* secondary text */
+  --color-line: #86959C;          /* lines, icons, borders - never for text */
+  --color-surface: #E9ECEB;       /* background of sections and cards */
+  --color-accent: #9E6129;        /* buttons, links - use sparingly */
+  --color-accent-light: #CFA075;  /* hover, badges */
+  --color-warm-surface: #F5EBE0;  /* hint and quote boxes */
+
+  /* Traffic light - only for the risk status (muted to fit the palette) */
+  --status-green: #3F7A5A;
+  --status-amber: #D1A23A;
+  --status-red: #A9483B;
+  --status-grey: #86959C;
+
+  /* Typography */
+  --font-heading: "Clash Display", sans-serif;
+  --font-body: "Satoshi", sans-serif;
+
+  /* Shapes */
+  --radius-window: 28px;          /* images, like the window in the logo */
+  --radius-card: 24px;
+  --radius-box: 16px;
+  --radius-pill: 999px;
+}
+
+/* ---------- Page frame: lots of white space ------------------------------- */
+.stApp, [data-testid="stHeader"] { background: var(--color-bg); }
+
+[data-testid="stMainBlockContainer"] {
+  max-width: 1240px;
+  padding-top: 4rem;
+  padding-bottom: 6rem;
+}
+
+/* Headlines: large and calm */
+h1, h2, h3, h4, h5, h6 { color: var(--color-text); }
+h1 { letter-spacing: -0.02em; line-height: 1.05 !important; }
+h2, h3 { letter-spacing: -0.01em; margin-top: 1.5rem; }
+
+/* Secondary text */
+[data-testid="stCaptionContainer"], .gc-muted { color: var(--color-text-muted) !important; }
+
+/* Dividers */
+hr { border-color: var(--color-surface) !important; margin: 2.5rem 0 !important; }
+
+/* ---------- Logo ---------------------------------------------------------- */
+[data-testid="stSidebarHeader"] img,
+[data-testid="stHeaderLogo"] { border-radius: 8px; }
+
+/* Home hero: large logo in a rounded image window */
+.st-key-hero [data-testid="stImage"] img,
+.st-key-hero [data-testid="stImageContainer"] img {
+  border-radius: var(--radius-window);
+  width: 100%;
+}
+.st-key-hero { margin-bottom: 1.5rem; }
+
+/* ---------- Cards and boxes ----------------------------------------------- */
+/* All bordered containers: soft rounded corners */
+[data-testid="stVerticalBlock"] { border-radius: var(--radius-card); }
+
+/* Cards (key starts with "card-"): surface background instead of a frame */
+[class*="st-key-card-"] {
+  background: var(--color-surface);
+  border-color: transparent !important;
+  padding: 1.25rem 1.4rem !important;
+  height: 100%;
+}
+[class*="st-key-card-"] h3 { margin-top: 0; }
+
+/* Cards that stand side by side in columns get the same height */
+[data-testid="stColumn"] > [data-testid="stVerticalBlock"] { height: 100%; }
+[data-testid="stLayoutWrapper"]:has(> [class*="st-key-card-"]) { flex: 1 1 auto; }
+/* ...except a single info card next to running text (home page) */
+[data-testid="stLayoutWrapper"]:has(> .st-key-card-who) { flex: 0 0 auto; }
+.st-key-card-who { height: auto; }
+
+/* Workflow cards on the home page: icons in line colour */
+[class*="st-key-card-workflow"] [role="img"] { color: var(--color-line); }
+
+/* Traffic-light dot (cards and ratio table) */
+.gc-dot {
+  display: inline-block; width: 14px; height: 14px; border-radius: 50%; flex: none;
+}
+.gc-dot-sm { width: 9px; height: 9px; margin-right: 8px; vertical-align: middle; }
+.gc-dot-green { background: var(--status-green); }
+.gc-dot-amber { background: var(--status-amber); }
+.gc-dot-red   { background: var(--status-red); }
+.gc-dot-grey  { background: var(--status-grey); }
+.gc-card-title { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+
+/* Hint boxes (st.info etc.), expanders */
+[data-testid="stAlert"], [data-testid="stAlertContainer"] { border-radius: var(--radius-box); }
+[data-testid="stExpander"] details {
+  border-radius: var(--radius-box);
+  border-color: var(--color-surface);
+}
+
+/* File uploader hint (Streamlit uses a faded grey that is too light on the surface colour) */
+[data-testid="stFileUploaderDropzoneInstructions"] span,
+[data-testid="stFileUploaderDropzoneInstructions"] small { color: var(--color-text-muted) !important; }
+
+/* Metrics (page 7): numbers in the heading font */
+[data-testid="stMetricValue"] { font-family: var(--font-heading); }
+
+/* ---------- Buttons ------------------------------------------------------- */
+/* Primary: amber with white text, hover in "window light" (dark text for contrast) */
+button[data-testid="stBaseButton-primary"],
+[data-testid="stPageLink"] a {
+  background: var(--color-accent) !important;
+  border: 1px solid var(--color-accent) !important;
+  color: #FFFFFF !important;
+  border-radius: var(--radius-pill) !important;
+  padding: 0.6rem 1.5rem !important;
+  font-weight: 500;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+button[data-testid="stBaseButton-primary"] *,
+[data-testid="stPageLink"] a * { color: inherit !important; }
+
+button[data-testid="stBaseButton-primary"]:hover,
+[data-testid="stPageLink"] a:hover {
+  background: var(--color-accent-light) !important;
+  border-color: var(--color-accent-light) !important;
+  color: var(--color-text) !important;
+}
+
+/* Next-step link: fit the text, not the full width */
+[data-testid="stPageLink"] a { display: inline-flex; width: auto; }
+
+/* Secondary: white with a line, same hover */
+button[data-testid="stBaseButton-secondary"] {
+  background: var(--color-bg) !important;
+  border: 1px solid var(--color-line) !important;
+  color: var(--color-text) !important;
+  border-radius: var(--radius-pill) !important;
+  padding: 0.6rem 1.5rem !important;
+}
+button[data-testid="stBaseButton-secondary"]:hover {
+  background: var(--color-accent-light) !important;
+  border-color: var(--color-accent-light) !important;
+  color: var(--color-text) !important;
+}
+
+button:focus-visible, a:focus-visible {
+  outline: 2px solid var(--color-accent) !important;
+  outline-offset: 2px;
+}
+
+/* Questionnaire (page 4): selected "No" = green, selected "Yes" = red */
+/* (Streamlit marks the selected button with data-testid="stBaseButton-segmented_controlActive") */
+[class*="st-key-q_"] button[data-testid="stBaseButton-segmented_controlActive"]:nth-of-type(1) {
+  background-color: var(--status-green) !important; border-color: var(--status-green) !important;
+  color: #FFFFFF !important;
+}
+[class*="st-key-q_"] button[data-testid="stBaseButton-segmented_controlActive"]:nth-of-type(2) {
+  background-color: var(--status-red) !important; border-color: var(--status-red) !important;
+  color: #FFFFFF !important;
+}
+
+/* ---------- Sidebar ------------------------------------------------------- */
+[data-testid="stSidebar"] { background: var(--color-surface); }
+[data-testid="stSidebar"] [data-testid="stIconMaterial"] { color: var(--color-line); }
+[data-testid="stSidebarNav"] a[aria-current="page"] { background: var(--color-bg); }
+[data-testid="stSidebarNav"] a[aria-current="page"] [data-testid="stIconMaterial"] {
+  color: var(--color-accent);
+}
+
+/* ---------- Ratio table (page 3) ------------------------------------------ */
+.ratios { width: 100%; border-collapse: collapse; font-size: 14px; color: var(--color-text);
+          font-family: var(--font-body); }
+.ratios th { text-align: left; font-weight: 700; padding: 10px 12px;
+             border-bottom: 1px solid var(--color-line); }
+.ratios td { padding: 9px 12px; border-bottom: 1px solid var(--color-surface); }
+.ratios .num, .ratios td:first-child { white-space: nowrap; }
+.ratios .group td { background: var(--color-surface); font-weight: 700; font-size: 12px;
+                    color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.ratios .trend { color: var(--color-text-muted); white-space: nowrap; }
+.gc-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* ---------- Mobile -------------------------------------------------------- */
+@media (max-width: 640px) {
+  [data-testid="stMainBlockContainer"] {
+    padding-top: 2.5rem;
+    padding-left: 1.25rem; padding-right: 1.25rem;
+    padding-bottom: 4rem;
+  }
+  h1 { font-size: 2.4rem !important; }
+  h2 { font-size: 1.6rem !important; }
+  :root { --radius-window: 20px; --radius-card: 20px; }
+  [class*="st-key-card-"] { padding: 1rem 1.1rem !important; }
+  hr { margin: 1.75rem 0 !important; }
+  [data-testid="stPageLink"] a { width: 100%; justify-content: center; }
+}

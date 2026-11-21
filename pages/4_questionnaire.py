@@ -24,18 +24,9 @@ answers = st.session_state.answers
 # ---------------------------------------------------------------------------
 # Colours of the answer buttons
 # ---------------------------------------------------------------------------
-# Streamlit has no option to colour single buttons, so we add our own CSS:
-# every answer widget has a key starting with "q_" (see below). If the selected button
-# is the 1st one ("No") it becomes green, if it is the 2nd one ("Yes") it becomes red.
-# Double braces {{ }} are needed because this is an f-string (single braces = Python value).
-st.html(f"""<style>
-[class*="st-key-q_"] button[aria-checked="true"]:nth-of-type(1) {{
-    background-color: {shared.GREEN_HEX} !important; border-color: {shared.GREEN_HEX} !important;
-    color: white !important; }}
-[class*="st-key-q_"] button[aria-checked="true"]:nth-of-type(2) {{
-    background-color: {shared.RED_HEX} !important; border-color: {shared.RED_HEX} !important;
-    color: white !important; }}
-</style>""")
+# Streamlit has no option to colour single buttons, so we use our own CSS (in assets/gocon.css,
+# loaded for all pages in app.py): every answer widget has a key starting with "q_" (see below).
+# If the selected button is the 1st one ("No") it becomes green, if it is the 2nd one ("Yes") red.
 
 # ---------------------------------------------------------------------------
 # Questions
