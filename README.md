@@ -11,14 +11,14 @@ conclusion.
 
 ---
 
-## Folder structure
+## Folder structure 
 
 ```
 going-concern-audit/
 ├── app.py                 Start of the app: navigation and sidebar
 ├── shared.py              Things all pages need (session state, traffic-light card)
 │
-├── pages/                 WHAT THE USER SEES – one file per step of the audit
+├── pages/                 What the user sees (the seperate tabs of the app)
 │   ├── 0_home.py
 │   ├── 1_company_profile.py
 │   ├── 2_financial_statements.py
@@ -29,7 +29,7 @@ going-concern-audit/
 │   ├── 7_assessment_report.py
 │   └── 8_audit_files.py
 │
-├── logic/                 THE CALCULATIONS – no layout, only business logic
+├── logic/                 The calculations and definitions (calculations of ratios, qualitative assessment, defined dataclasses,...)
 │   ├── data_input.py      Standard format, company profile, sample companies, AI import
 │   ├── analysis.py        Legal tests (CO), ratios, trends, liquidity plan
 │   ├── assessment.py      ISA 570 questionnaire, overall risk, auditor's conclusion
@@ -41,9 +41,6 @@ going-concern-audit/
 ├── requirements.txt       Python packages
 └── README.md              This file
 ```
-
-**Rule of thumb:** If you want to change *what is shown*, open `pages/`.
-If you want to change *how something is calculated*, open `logic/`.
 
 ---
 
@@ -58,23 +55,10 @@ pip install -r requirements.txt   # 3. install the packages (only once)
 streamlit run app.py              # 4. start the app
 ```
 
-### AI import (Claude API)
-1. Create an API key on https://console.anthropic.com.
-2. Copy `.streamlit/secrets.toml.example` to `.streamlit/secrets.toml` and insert the key.
-3. Never upload `secrets.toml` to GitHub (it is excluded in `.gitignore`).
-
 ### Machine learning model
-The Polish dataset (`1year.arff` … `5year.arff`) and the trained model
-(`bankruptcy_model.joblib`) are included in the folder `data/`, so page 6 works
-right away. To retrain (e.g. with another scikit-learn version), delete
-`bankruptcy_model.joblib` and click **Train model now** on page 6.
 
 Dataset: Tomczak, S. (2016). Polish Companies Bankruptcy [Dataset].
 UCI Machine Learning Repository. https://doi.org/10.24432/C5F600 (licence CC BY 4.0)
-
-Without API key the app still works with the sample companies.
-
----
 
 ## The audit procedure in the app
 
