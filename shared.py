@@ -14,17 +14,22 @@ Keys in st.session_state:
     conclusion        dict: auditor's conclusion
 """
 
+# Link between the pages and the logic/ files: holds the session state, loads samples and
+# saved engagements, and provides the cards and buttons that look the same on every page.
+# Use of generative AI:
+# - Code: parts of the code in this file were written with the help of Claude (Anthropic). We reviewed, tested and adjusted them.
+# - Comments: Claude was used as support for writing the comments and making sure that the structure fits. We checked and partly adjusted them.
+
 import streamlit as st
 
 from logic import analysis, assessment, data_input, ml_model
 from logic.data_input import table_to_years
 
-# GoCon brand colours, used for the Plotly charts. Same values as the CSS variables in
-# assets/gocon.css and the theme in .streamlit/config.toml.
+# GoCon brand colours for the Plotly charts; must match assets/gocon.css and .streamlit/config.toml
 BG, TEXT, TEXT_MUTED, LINE = "#FFFFFF", "#1A1C1B", "#4D585F", "#86959C"
 SURFACE, ACCENT, ACCENT_LIGHT, WARM_SURFACE = "#E9ECEB", "#9E6129", "#CFA075", "#F5EBE0"
 
-# Traffic light: the only colours outside the brand palette, used only for the risk status
+# Traffic light: the only colours outside the brand palette, reserved for the risk status
 GREEN_HEX, AMBER_HEX, RED_HEX, GREY_HEX = "#3F7A5A", "#D1A23A", "#A9483B", "#86959C"
 HEX = {"green": GREEN_HEX, "amber": AMBER_HEX, "red": RED_HEX, "grey": GREY_HEX}
 
@@ -40,6 +45,7 @@ def init():
     ss.setdefault("liquidity_inputs", None)
     ss.setdefault("weights", dict(assessment.DEFAULT_WEIGHTS))
     ss.setdefault("conclusion", {})
+    # part of the widget keys on pages 1, 2 and 5; raising it rebuilds those widgets with new data
     ss.setdefault("editor_version", 0)
 
 
@@ -47,6 +53,7 @@ def _reset_widgets():
     """Forget widget states of the previous engagement (questionnaire answers,
     table editors) so the newly loaded data is shown."""
     ss = st.session_state
+    # prefixes: q_ = questionnaire (page 4), p_ = profile (page 1), measures_base = page 5
     for k in [k for k in ss.keys() if str(k).startswith(("q_", "p_", "measures_base"))]:
         del ss[k]
     ss.editor_version += 1
@@ -71,6 +78,7 @@ def load_engagement(data):
     for k, v in data.items():
         ss[k] = v
     ss.liquidity_inputs = data.get("liquidity_inputs")   # None if no plan was saved
+    # merge with the defaults so audit files saved before a profile field existed still work
     ss.profile = data_input.default_profile() | (data.get("profile") or {})
     ss.profile_confirmed = bool(data.get("profile"))
     ss.pop("ai_result", None)
@@ -102,6 +110,7 @@ def liquidity_result():
     return analysis.evaluate_plan(li["opening_cash"], li["credit_line"], li["plan"], li["measures"])
 
 
+# cached: the model file is loaded only once, not on every rerun of a page
 @st.cache_resource
 def model_package():
     return ml_model.load_model()
@@ -129,9 +138,10 @@ def legal_tests(fy):
 
 def traffic_light(status, title, value="", caption=""):
     """Card with a coloured dot, used on several pages."""
+    # key "card-<title>" lets assets/gocon.css style each card individually
     key = "card-" + "".join(ch if ch.isalnum() else "-" for ch in title.lower())
     with st.container(border=True, key = key):
-        # coloured dot + title; the look is defined in assets/gocon.css (.gc-dot, .gc-card-title)
+        # look defined in assets/gocon.css (.gc-dot, .gc-card-title)
         st.markdown(f"<div class='gc-card-title'><span class='gc-dot gc-dot-{status}'></span>"
                     f"{title}</div>", unsafe_allow_html=True)
         if value:

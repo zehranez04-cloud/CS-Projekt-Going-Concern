@@ -17,7 +17,13 @@ Folders:  pages/ = what the user sees (one file per step)
           logic/ = calculations (data input, analysis, assessment, ML, documentation)
 """
 
-from pathlib import Path                      # file paths that work on every operating system
+# Entry point: sets up the session state, loads the GoCon design for all pages,
+# defines the navigation and shows the progress of the engagement in the sidebar.
+# Use of generative AI:
+# - Code: parts of the code in this file were written with the help of Claude (Anthropic). We reviewed, tested and adjusted them.
+# - Comments: Claude was used as support for writing the comments and making sure that the structure fits. We checked and partly adjusted them.
+
+from pathlib import Path
 
 import streamlit as st
 
@@ -27,16 +33,12 @@ st.set_page_config(page_title="GoCon · Going Concern Audit", page_icon="assets/
                    layout="wide")
 shared.init()
 
-# GoCon design: colours, fonts and component styles for all pages (see assets/gocon.css).
-# The file is read here and passed as text, which works in every Streamlit version.
+# The CSS file is read and passed as text, which works in every Streamlit version.
 CSS_FILE = Path(__file__).parent / "assets" / "gocon.css"
 st.html(f"<style>{CSS_FILE.read_text(encoding='utf-8')}</style>")
-# Small GC logo in the top left corner (sidebar and header)
 st.logo("assets/logo_gc.png", size="large")
 
-# ---------------------------------------------------------------------------
-# Navigation: one file per page in the folder pages/
-# ---------------------------------------------------------------------------
+# --- Navigation ---
 pages = {
     "Overview": [
         st.Page("pages/0_home.py", title="Home", icon=":material/home:", default=True),
@@ -56,14 +58,13 @@ pages = {
 }
 nav = st.navigation(pages)
 
-# ---------------------------------------------------------------------------
-# Sidebar: current engagement and progress
-# ---------------------------------------------------------------------------
+# --- Sidebar: current engagement and progress ---
 with st.sidebar:
     eng = st.session_state.engagement
     st.markdown(f"**Client:** {eng['client'] or '–'}  \n**Financial year:** {eng['fiscal_year'] or '–'}  \n"
                 f"**Industry:** {st.session_state.profile['industry']}")
     ys = shared.years()
+    # a step counts as done as soon as its data exists in the session state
     steps = [
         ("Company profile", st.session_state.profile_confirmed),
         ("Financial statements", bool(ys)),

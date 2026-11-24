@@ -1,25 +1,28 @@
 """Home page: problem statement and how the app works."""
 
+# Landing page: logo, the problem the app solves, our solution and the seven-step workflow.
+# Use of generative AI:
+# - Code: parts of the code in this file were written with the help of Claude (Anthropic). We reviewed, tested and adjusted them.
+# - Comments: Claude was used as support for writing the comments and making sure that the structure fits. We checked and partly adjusted them.
+
 import streamlit as st
 
 import shared
 
-# Hero: large GoCon logo in a rounded image window (style: .st-key-hero in assets/gocon.css)
+# style: .st-key-hero in assets/gocon.css
 with st.container(key="hero"):
     st.image("assets/logo_gocon.png", width="stretch")
 
-# Colour blocks ("bento" layout): every container with a key "panel-..." or "card-..." gets
-# its background colour from assets/gocon.css
-with st.container(key="panel-intro"):                  # warm surface
+# "Bento" layout: every container with a key "panel-..." or "card-..." gets its
+# background colour from assets/gocon.css
+with st.container(key="panel-intro"):
     st.title("Going Concern Audit")
     st.markdown("##### Supporting auditors in assessing whether a company can continue as a going concern")
 
-# ---------------------------------------------------------------------------
-# Problem statement (grading requirement 1)
-# ---------------------------------------------------------------------------
+# --- Problem statement (grading requirement 1) ---
 c1, c2 = st.columns([3, 2], gap="small")              # small gap = same spacing as between the colour blocks
 with c1:
-    with st.container(key="panel-problem"):               # grey surface
+    with st.container(key="panel-problem"):
         st.subheader("The problem")
         st.markdown(
             "In every financial statement audit the auditor must conclude whether management's use "
@@ -30,14 +33,15 @@ with c1:
             "accounting standards, ratios are calculated in spreadsheets, and the ISA 570 checklist, "
             "the liquidity plan and the documentation live in separate files.")
 with c2:
-    with st.container(key="card-who"):                  # dark card
+    with st.container(key="card-who"):
         st.markdown("**Who uses it?**  \nExternal auditors (e.g. audit assistants and managers) "
                     "during the planning and completion phase of an audit.")
-    with st.container(key="card-important"):            # window-light card
+    with st.container(key="card-important"):
         st.markdown("**Important**  \nThe app supports professional judgement – it does not "
                     "replace it. The final conclusion is always recorded by the auditor.")
 
-with st.container(key="panel-solution"):                # grey surface, full width (list in two columns on desktop)
+# --- Solution ---
+with st.container(key="panel-solution"):                # the CSS splits the list into two columns on desktop
     st.subheader("Our solution")
     st.markdown(
         "One web app that takes the auditor through the complete procedure – from the uploaded "
@@ -50,6 +54,7 @@ with st.container(key="panel-solution"):                # grey surface, full wid
         "- A **machine learning model** trained on real bankruptcy data\n"
         "- A combined **risk assessment**, the auditor's conclusion and a **PDF working paper**")
 
+# --- Workflow ---
 steps = [
     (":material/domain:", "1 · Company profile"),
     (":material/upload_file:", "2 · Financial statements"),
@@ -59,8 +64,9 @@ steps = [
     (":material/model_training:", "6 · Bankruptcy model"),
     (":material/gavel:", "7 · Assessment & report"),
 ]
-with st.container(key="panel-workflow"):               # dark section with white step cards
+with st.container(key="panel-workflow"):
     st.subheader("Workflow")
+    # two rows of four cards (the second row has three)
     for row_start in (0, 4):
         cols = st.columns(4)
         for i, (col, (icon, title)) in enumerate(zip(cols, steps[row_start:row_start + 4]), start=row_start):

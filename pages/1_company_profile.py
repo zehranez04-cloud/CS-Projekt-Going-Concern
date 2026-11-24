@@ -5,6 +5,11 @@ industry -> traffic-light thresholds, size -> audit type / framework,
 founding year and group structure -> additional warning signals.
 """
 
+# The profile is stored in st.session_state.profile and used on pages 3, 7 and in the PDF.
+# Use of generative AI:
+# - Code: parts of the code in this file were written with the help of Claude (Anthropic). We reviewed, tested and adjusted them.
+# - Comments: Claude was used as support for writing the comments and making sure that the structure fits. We checked and partly adjusted them.
+
 from datetime import date
 
 import pandas as pd
@@ -19,11 +24,12 @@ st.caption("Enter the master data of the audit client. The industry, size and gr
            "thresholds than an IT company.")
 
 ss = st.session_state
+# p and eng are references to the dicts in the session state, so every input is saved directly.
+# v is part of every widget key: when a sample or audit file is loaded, v changes and the
+# widgets are rebuilt with the new values (see shared._reset_widgets).
 p, eng, v = ss.profile, ss.engagement, ss.editor_version
 
-# ---------------------------------------------------------------------------
-# Engagement
-# ---------------------------------------------------------------------------
+# --- Engagement ---
 st.subheader("Engagement")
 c1, c2, c3 = st.columns(3)
 eng["client"] = c1.text_input("Client name", eng["client"], key=f"p_client_{v}")
@@ -31,9 +37,7 @@ eng["fiscal_year"] = c2.text_input("Financial year audited", eng["fiscal_year"],
                                    placeholder="e.g. 2025", key=f"p_fy_{v}")
 eng["auditor"] = c3.text_input("Auditor", eng["auditor"], key=f"p_auditor_{v}")
 
-# ---------------------------------------------------------------------------
-# Company
-# ---------------------------------------------------------------------------
+# --- Company ---
 st.subheader("Company")
 c1, c2, c3 = st.columns(3)
 p["industry"] = c1.selectbox("Industry", data_input.INDUSTRIES, index=data_input.INDUSTRIES.index(p["industry"]),
@@ -56,27 +60,26 @@ if p["legal_form"] == "Other":
     st.caption(":material/info: CO Art. 725–725b apply to companies limited by shares; the "
                "GmbH (Art. 820) and the cooperative (Art. 903) refer to them.")
 
-# ---------------------------------------------------------------------------
-# Group structure
-# ---------------------------------------------------------------------------
+# --- Group structure ---
 st.subheader("Group structure")
 c1, c2 = st.columns(2)
 p["group"] = c1.toggle("Part of a group (subsidiary)", p["group"], key=f"p_group_{v}")
+# a group without a support letter becomes a warning signal (data_input.profile_signals)
 p["support_letter"] = c2.toggle("Written support letter from the parent available",
                                 p["support_letter"], key=f"p_support_{v}",
                                 disabled=not p["group"],
                                 help="A binding letter of support can mitigate going concern "
                                      "doubts of a subsidiary (evaluate it like management's plans, ISA 570.16).")
 
-# ---------------------------------------------------------------------------
-# Audit type (CO Art. 727) - with automatic check if financials are loaded
-# ---------------------------------------------------------------------------
+# --- Audit type (CO Art. 727) ---
 st.subheader("Audit")
 p["audit_type"] = st.radio("Type of audit", data_input.AUDIT_TYPES, index=data_input.AUDIT_TYPES.index(p["audit_type"]),
                            horizontal=True, key=f"p_audit_{v}")
+# the size check needs total assets and revenue, so it only runs once financials are loaded
 ys = shared.years()
 if ys:
     ordinary, reason = data_input.audit_type_check(p, ys)
+    # warn only if an ordinary audit is required but a limited audit was selected
     if ordinary and p["audit_type"] != data_input.AUDIT_TYPES[0]:
         st.warning(f"Check the audit type: {reason}")
     else:
@@ -84,9 +87,7 @@ if ys:
 else:
     st.caption("The size check (CO Art. 727) runs as soon as financial statements are loaded.")
 
-# ---------------------------------------------------------------------------
-# Business understanding (ISA 315) - free text, included in the PDF
-# ---------------------------------------------------------------------------
+# --- Business understanding (ISA 315), free text included in the PDF ---
 st.subheader("Business understanding")
 p["description"] = st.text_area("Business model and main products", p["description"],
                                 key=f"p_desc_{v}", height=80)
@@ -95,9 +96,7 @@ p["key_risks"] = c1.text_area("Key risks known from planning (e.g. customer depe
                               p["key_risks"], key=f"p_risks_{v}", height=100)
 p["notes"] = c2.text_area("Auditor's notes", p["notes"], key=f"p_notes_{v}", height=100)
 
-# ---------------------------------------------------------------------------
-# Feedback: what the inputs change
-# ---------------------------------------------------------------------------
+# --- Feedback: what the inputs change ---
 st.subheader("Effect on the analysis")
 c1, c2 = st.columns([3, 2], gap="large")
 with c1:
@@ -105,6 +104,7 @@ with c1:
     rows = []
     for r in analysis.RATIOS:
         if r.key in analysis.INDUSTRY_KEYS:
+            # .split(" (")[0] drops the "(industry)" suffix of threshold_text
             rows.append({"Ratio": r.name,
                          "This industry": analysis.threshold_text(r, p["industry"]).split(" (")[0],
                          "General": analysis.threshold_text(r, "General").split(" (")[0]})
@@ -119,6 +119,7 @@ with c2:
     for _, text in sig or [("", "None")]:
         st.write((":material/warning: " if sig else "") + text)
 
+# profile_confirmed only drives the progress list in the sidebar (app.py)
 if st.button("Confirm profile", type="primary", icon=":material/check:"):
     ss.profile_confirmed = True
     st.toast("Company profile saved")
