@@ -75,18 +75,26 @@ UCI Machine Learning Repository. https://doi.org/10.24432/C5F600 (licence CC BY 
 
 ## Contribution matrix
 
-| Part | Files | Franco | Juled | Maiara | Nicole | Zehra |
-|---|---|---|---|---|---|---|
-| Concept, problem statement | `0_home.py`, README |X| | | | |
-| Company profile | `1_company_profile.py`, `data_input.py` | | | | |X|
-| Financial statements & AI | `2_financial_statements.py`, `data_input.py` |X| |X| |X|
-| Ratios & legal tests | `3_ratio_analysis.py`, `analysis.py` | | |X| | |
-| ISA 570 questionnaire | `4_questionnaire.py`, `assessment.py` | | | |X| |
-| Liquidity planner | `5_liquidity_planner.py`, `analysis.py` | |X|X| | |
-| Machine learning | `6_bankruptcy_model.py`, `ml_model.py` | | |X| | |
-| Assessment, PDF, database | `7_assessment_report.py`, `8_audit_files.py`, `assessment.py`, `documentation.py` | | | | |X|
-| Combined risk verdict (weighting, score composition, robustness check) | `assessment.py`, `7_assessment_report.py` | | |X| | |
-| Video | – | | | | | |
+## Contribution matrix
+
+| Task | Franco | Juled | Maiara | Nicole | Zehra |
+|---|---|---|---|---|---|
+| Project management | – | Contributor | Supporting | – | **Main** |
+| Concept & problem statement | **Main** | Supporting | – | – | Supporting |
+| Design & branding | – | Supporting | Supporting | **Main** | – |
+| Company profile | – | Contributor | – | – | **Main** |
+| Financial statements & AI | **Main** | – | **Main** | – | **Main** |
+| Ratios & legal tests | – | – | **Main** | Supporting | Supporting |
+| ISA 570 questionnaire | Supporting | – | – | **Main** | Contributor |
+| Liquidity planner | – | **Main** | **Main** | – | Supporting |
+| Machine learning model | – | Supporting | **Main** | – | Contributor |
+| Combined risk verdict | Supporting | – | **Main** | – | Supporting |
+| Assessment, PDF & database | – | **Main** | – | Supporting | **Main** |
+| Documentation & README | Contributor | Contributor | Contributor | Contributor | **Main** |
+| Testing | Contributor | **Main** | – | Supporting | – |
+| Video | **Main** | Supporting | – | **Main** | – |
+
+**Main** = main contributor · Contributor = contributor · Supporting = supporting role · – = no contribution
 
 **Use of generative AI** – answer in the video: Which tools did we use? For which parts?
 What did we change or write ourselves? How did we check the AI output? What did we learn?
