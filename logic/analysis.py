@@ -12,7 +12,7 @@ Sections:
 # "red" = critical, "grey" = cannot be assessed (missing data).
 # Use of generative AI:
 # - Code: parts of the code in this file were written with the help of Claude (Anthropic). We reviewed, tested and adjusted them.
-# - Comments: Claude was used as support for writing the comments and making sure that the structure fits. We checked and partly adjusted them.
+# - Comments: Claude was used as support for writing the comments and making sure that the structure fits.
 
 import math
 from dataclasses import dataclass

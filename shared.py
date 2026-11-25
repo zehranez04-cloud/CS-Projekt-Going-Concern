@@ -18,7 +18,7 @@ Keys in st.session_state:
 # saved engagements, and provides the cards and buttons that look the same on every page.
 # Use of generative AI:
 # - Code: parts of the code in this file were written with the help of Claude (Anthropic). We reviewed, tested and adjusted them.
-# - Comments: Claude was used as support for writing the comments and making sure that the structure fits. We checked and partly adjusted them.
+# - Comments: Claude was used as support for writing the comments and making sure that the structure fits.
 
 import streamlit as st
 

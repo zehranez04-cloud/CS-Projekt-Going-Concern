@@ -10,7 +10,7 @@ Sections:
 # Questions for page 4, the overall risk shown on page 7 and the implication for the auditor's report.
 # Use of generative AI:
 # - Code: parts of the code in this file were written with the help of Claude (Anthropic). We reviewed, tested and adjusted them.
-# - Comments: Claude was used as support for writing the comments and making sure that the structure fits. We checked and partly adjusted them.
+# - Comments: Claude was used as support for writing the comments and making sure that the structure fits.
 
 from dataclasses import dataclass
 

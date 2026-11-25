@@ -21,7 +21,7 @@ Folders:  pages/ = what the user sees (one file per step)
 # defines the navigation and shows the progress of the engagement in the sidebar.
 # Use of generative AI:
 # - Code: parts of the code in this file were written with the help of Claude (Anthropic). We reviewed, tested and adjusted them.
-# - Comments: Claude was used as support for writing the comments and making sure that the structure fits. We checked and partly adjusted them.
+# - Comments: Claude was used as support for writing the comments and making sure that the structure fits.
 
 from pathlib import Path
 

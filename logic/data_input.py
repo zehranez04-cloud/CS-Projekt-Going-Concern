@@ -11,7 +11,7 @@ Sections:
 # Used by pages 1 and 2; every other module works with the FinancialYear objects defined here.
 # Use of generative AI:
 # - Code: parts of the code in this file were written with the help of Claude (Anthropic). We reviewed, tested and adjusted them.
-# - Comments: Claude was used as support for writing the comments and making sure that the structure fits. We checked and partly adjusted them.
+# - Comments: Claude was used as support for writing the comments and making sure that the structure fits.
 
 import base64                           # PDFs are sent to the Claude API as base64 text
 import io                               # lets pandas read uploaded bytes like a file

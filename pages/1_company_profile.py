@@ -8,7 +8,7 @@ founding year and group structure -> additional warning signals.
 # The profile is stored in st.session_state.profile and used on pages 3, 7 and in the PDF.
 # Use of generative AI:
 # - Code: parts of the code in this file were written with the help of Claude (Anthropic). We reviewed, tested and adjusted them.
-# - Comments: Claude was used as support for writing the comments and making sure that the structure fits. We checked and partly adjusted them.
+# - Comments: Claude was used as support for writing the comments and making sure that the structure fits.
 
 from datetime import date
 
