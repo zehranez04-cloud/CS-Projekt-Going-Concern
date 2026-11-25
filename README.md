@@ -75,8 +75,6 @@ UCI Machine Learning Repository. https://doi.org/10.24432/C5F600 (licence CC BY 
 
 ## Contribution matrix
 
-## Contribution matrix
-
 | Task | Franco | Juled | Maiara | Nicole | Zehra |
 |---|---|---|---|---|---|
 | Project management | – | Contributor | Supporting | – | **Main** |
